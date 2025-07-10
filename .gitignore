@@ -1,0 +1,81 @@
+private/
+
+.env
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.classbb
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+ENV/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Output files
+output/*
+## But we do want to have a readme
+!output/README.md
+
+# Private examples - important to keep these out of the repository
+!examples/private/
+examples/private/*
+## But we do want to have the readme
+!examples/private/README.md
+
+# https://github.com/github/gitignore/blob/main/Global/macOS.gitignore
+## General
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon[
+]
+
+## Thumbnails
+._*
+
+## Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+## Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+.env
+
