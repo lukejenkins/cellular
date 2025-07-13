@@ -23,3 +23,9 @@ A place for my notes and ramblings about all things cellular.
 ### Blogs
 
 - <https://markhoutz.com/>
+
+### Privacy
+
+- <https://github.com/EFForg/rayhunter>
+- <https://github.com/MarlinDetection/Marlin>
+
