@@ -37,3 +37,5 @@ A place for my notes and ramblings about all things cellular.
 ## Unsorted
 
 * <https://mjg59.dreamwidth.org/61725.html> blog post about the orbic RC400 and modifying usb mode 
+* <https://www.osmocom.org/projects/quectel-modems/wiki/EC25>
+* <https://github.com/the-modem-distro>
