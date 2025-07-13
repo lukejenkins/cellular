@@ -27,5 +27,6 @@ A place for my notes and ramblings about all things cellular.
 ### Privacy
 
 - <https://github.com/EFForg/rayhunter>
+-- Keep an eye on this work, lors of extra logging which might be useful for PCI Scanning/Mapping. <https://github.com/EFForg/rayhunter/discussions/447>
 - <https://github.com/MarlinDetection/Marlin>
 
