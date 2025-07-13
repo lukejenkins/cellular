@@ -8,6 +8,10 @@ A place for my notes and ramblings about all things cellular.
 - [Quectel BG95-M3](/quectel/bg95m3/) - Reference documentation specific to the Quectel BG95-M3 modem
 - [Quectel EC2x and EG2x](/quectel/eg25g/) - Reference documentation specific to the Quectel EC25-G/EG25-G modems
 
+## Quests
+
+- try to figure out a way to get geolocation data on the Rayhunter: <https://github.com/EFForg/rayhunter/issues/20#issuecomment-2762008339>
+
 ## Links
 
 ### Links to information
@@ -26,7 +30,7 @@ A place for my notes and ramblings about all things cellular.
 
 ### Privacy
 
-- <https://github.com/EFForg/rayhunter>
--- Keep an eye on this work, lors of extra logging which might be useful for PCI Scanning/Mapping. <https://github.com/EFForg/rayhunter/discussions/447>
-- <https://github.com/MarlinDetection/Marlin>
+* <https://github.com/EFForg/rayhunter>
+** Keep an eye on this work, lors of extra logging which might be useful for PCI Scanning/Mapping. <https://github.com/EFForg/rayhunter/discussions/447>
+* <https://github.com/MarlinDetection/Marlin>
 
