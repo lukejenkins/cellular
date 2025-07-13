@@ -34,3 +34,6 @@ A place for my notes and ramblings about all things cellular.
 ** Keep an eye on this work, lors of extra logging which might be useful for PCI Scanning/Mapping. <https://github.com/EFForg/rayhunter/discussions/447>
 * <https://github.com/MarlinDetection/Marlin>
 
+## Unsorted
+
+* <https://mjg59.dreamwidth.org/61725.html> blog post about the orbic RC400 and modifying usb mode 
