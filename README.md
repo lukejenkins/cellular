@@ -11,6 +11,7 @@ A place for my notes and ramblings about all things cellular.
 ## Quests
 
 - try to figure out a way to get geolocation data on the Rayhunter: <https://github.com/EFForg/rayhunter/issues/20#issuecomment-2762008339>
+  - https://xnux.eu/devices/feature/modem-pp-reveng.html
 
 ## Links
 
