@@ -25,11 +25,12 @@ settings backup/restore mechanism.
 All units I've tested have been those customized for U.S. Cellular.
 Tested on firmware versions: USC_1.1.79.0, 1.2.24.0
 
-System requirements: openssl, expect, curl
+System requirements (Linux/macOS): openssl, expect, curl
+System requirements (Windows): OpenSSH client (built into Win11)
 Python requirements: none (stdlib only)
 """
 
-SCRIPT_VERSION = "1.0.0"
+SCRIPT_VERSION = "1.0.1"
 
 import argparse
 import base64
@@ -62,6 +63,8 @@ WEB_USER = "admin"
 WEB_PASS = "roofclimberabove"
 SSH_PASS = "chpaccess"
 SSH_HASH_SALT = "test"
+
+IS_WINDOWS = platform.system() == "Windows"
 
 log = logging.getLogger("cfw3212_unlock")
 
@@ -406,11 +409,16 @@ class CFW3212Unlock:
 
     def step4_inject_hash(self, backup_data):
         log.info("[4/8] Injecting password hash into cfg...")
-        hash_output = subprocess.run(
-            ["openssl", "passwd", "-1", "-salt", SSH_HASH_SALT, SSH_PASS],
-            capture_output=True, text=True, check=True,
-        )
-        new_hash = hash_output.stdout.strip()
+        if shutil.which("openssl"):
+            hash_output = subprocess.run(
+                ["openssl", "passwd", "-1", "-salt", SSH_HASH_SALT, SSH_PASS],
+                capture_output=True, text=True, check=True,
+            )
+            new_hash = hash_output.stdout.strip()
+        else:
+            # Precomputed: openssl passwd -1 -salt test chpaccess
+            new_hash = "$1$test$2uRkTjIp5wMEzGsw/nvkw/"
+            log.info("       (openssl not found, using precomputed hash)")
         encoded_hash = urllib.parse.quote(new_hash)
         log.info(f"       Hash: {new_hash}")
         log.debug(f"  URL-encoded: {encoded_hash}")
@@ -597,7 +605,8 @@ class CFW3212Unlock:
             ping_ok = False
             try:
                 result = subprocess.run(
-                    ["ping", "-c", "1", "-W", "3", self.target],
+                    ["ping", "-n", "1", "-w", "3000", self.target] if IS_WINDOWS
+                    else ["ping", "-c", "1", "-W", "3", self.target],
                     capture_output=True, text=True, timeout=5,
                 )
                 ping_ok = result.returncode == 0
@@ -700,6 +709,12 @@ class CFW3212Unlock:
 
     def _try_ssh(self):
         """Single SSH attempt. Returns (success, output)."""
+        if shutil.which("expect") and not IS_WINDOWS:
+            return self._try_ssh_expect()
+        return self._try_ssh_sshpass()
+
+    def _try_ssh_expect(self):
+        """SSH via expect (Linux/macOS)."""
         result = subprocess.run(
             ["expect", "-c", f'''
 set timeout 30
@@ -718,6 +733,68 @@ expect {{
         log.debug(f"  SSH stderr: {result.stderr.strip()}")
         log.debug(f"  SSH exit code: {result.returncode}")
         return "uid=0(root)" in result.stdout, result.stdout
+
+    def _try_ssh_sshpass(self):
+        """SSH via sshpass or plain ssh (Windows/fallback).
+
+        On Windows, OpenSSH is built-in but expect/sshpass are not.
+        Try sshpass first; if unavailable, use ssh with keyboard-interactive
+        via SSH_ASKPASS environment variable.
+        """
+        ssh_cmd = [
+            "ssh", "-o", "StrictHostKeyChecking=no",
+            "-o", "UserKnownHostsFile=" + ("NUL" if IS_WINDOWS else "/dev/null"),
+            "-o", "NumberOfPasswordPrompts=1",
+            "-o", "BatchMode=no",
+            f"root@{self.target}",
+            "id; hostname; rdb_get telnet.passwd.encrypted",
+        ]
+
+        if shutil.which("sshpass"):
+            cmd = ["sshpass", "-p", SSH_PASS] + ssh_cmd
+            log.debug(f"  Using sshpass")
+        else:
+            # Use SSH_ASKPASS with a helper that echoes the password.
+            # On Windows, we write a small .bat; on Unix, a shell script.
+            askpass = self._make_askpass()
+            if askpass is None:
+                log.debug("  No sshpass or askpass available, trying ssh directly")
+                return False, "no password mechanism available"
+            cmd = ssh_cmd
+            env = os.environ.copy()
+            env["SSH_ASKPASS"] = askpass
+            env["SSH_ASKPASS_REQUIRE"] = "force"
+            env["DISPLAY"] = "none"
+            log.debug(f"  Using SSH_ASKPASS={askpass}")
+            result = subprocess.run(
+                cmd, capture_output=True, text=True, timeout=45, env=env,
+            )
+            log.debug(f"  SSH stdout: {result.stdout.strip()}")
+            log.debug(f"  SSH stderr: {result.stderr.strip()}")
+            log.debug(f"  SSH exit code: {result.returncode}")
+            return "uid=0(root)" in result.stdout, result.stdout + result.stderr
+
+        result = subprocess.run(
+            cmd, capture_output=True, text=True, timeout=45,
+        )
+        log.debug(f"  SSH stdout: {result.stdout.strip()}")
+        log.debug(f"  SSH stderr: {result.stderr.strip()}")
+        log.debug(f"  SSH exit code: {result.returncode}")
+        return "uid=0(root)" in result.stdout, result.stdout + result.stderr
+
+    def _make_askpass(self):
+        """Create a temporary script that prints the SSH password."""
+        askpass_dir = tempfile.gettempdir()
+        if IS_WINDOWS:
+            path = os.path.join(askpass_dir, "cfw3212_askpass.bat")
+            with open(path, "w") as f:
+                f.write(f"@echo {SSH_PASS}\n")
+        else:
+            path = os.path.join(askpass_dir, "cfw3212_askpass.sh")
+            with open(path, "w") as f:
+                f.write(f"#!/bin/sh\necho '{SSH_PASS}'\n")
+            os.chmod(path, 0o700)
+        return path
 
     def step8_verify_ssh(self):
         log.info("[8/8] Verifying SSH access...")
