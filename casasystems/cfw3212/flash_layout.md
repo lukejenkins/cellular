@@ -22,21 +22,46 @@ Source: `dmesg` output from `msm_nand_flash_onfi_probe`.
 
 The device uses a **dual A/B slot** partition layout (identified as `aurus_ab` with `sdxlemur` override in the build configuration). The bootloader is Qualcomm Little Kernel (LK, target `mdm9640`), using Fastboot as the flashing protocol.
 
-### Key MTD Partitions
+### Complete MTD Partition Table
 
-The following partitions are confirmed from `dmesg` kernel log, init scripts, and the `flashtool` utility. MTD numbers are assigned dynamically at boot and may shift between firmware versions; the partition **names** are stable.
+Captured from `/proc/mtd` on a live device running USC 1.2.24.0. All 32 partitions are shown. The entire 512 MB NAND is allocated — there is no unpartitioned space.
 
-| MTD Name | Size | Format | Purpose |
-|----------|------|--------|---------|
-| `boot_a` | 12 MB | Raw (kernel image) | Linux kernel, slot A |
-| `boot_b` | 12 MB | Raw (kernel image) | Linux kernel, slot B |
-| `system_a` | 123 MB | UBI | Root filesystem, slot A |
-| `system_b` | 123 MB | UBI | Root filesystem, slot B |
-| `usrdata` | 173 MB | UBI | Persistent user data |
-| `oemdata` | (variable) | UBI | Casa OEM configuration |
-| `cust_info` | (small) | Raw | U-Boot environment (32 KB used) |
+| MTD | Name | Size | Purpose |
+|-----|------|------|---------|
+| mtd0 | `sbl` | 2.5 MB | Secondary bootloader |
+| mtd1 | `mibib` | 1 MB | NAND partition table (MIBIB) |
+| mtd2 | `efs2` | 22 MB | Modem EFS (NV items, RF calibration, MBN profiles) |
+| mtd3 | `rawdata` | 2.5 MB | Factory calibration data |
+| mtd4 | `sys_rev` | 3.5 MB | System revision info |
+| mtd5 | `cust_info` | 2.5 MB | U-Boot environment (A/B slot metadata, 32 KB used) |
+| mtd6 | `tz` | 2 MB | TrustZone firmware |
+| mtd7 | `tz_devcfg` | 1.25 MB | TZ device configuration |
+| mtd8 | `ddr` | 1.25 MB | DDR training parameters |
+| mtd9 | `apdp` | 1.25 MB | Debug policy |
+| mtd10 | `xbl_config` | 1.25 MB | XBL configuration |
+| mtd11 | `xbl_ramdump` | 1 MB | RAM dump support |
+| mtd12 | `multi_image` | 1.25 MB | Multi-image |
+| mtd13 | `multi_image_qti` | 1 MB | QTI multi-image |
+| mtd14 | `aop` | 1.25 MB | Always-On Processor firmware |
+| mtd15 | `qhee` | 1.25 MB | Qualcomm Hypervisor (EL2) |
+| mtd16 | `abl` | 1.25 MB | Android bootloader |
+| mtd17 | `uefi` | 3.25 MB | UEFI firmware |
+| mtd18 | `toolsfv` | 1.25 MB | Tools FV |
+| mtd19 | `loader_sti` | 1.25 MB | Loader STI |
+| mtd20 | `logfs` | 1 MB | Log filesystem |
+| mtd21 | `devinfo` | 1.25 MB | Device info |
+| mtd22 | `sec` | 1.25 MB | Security partition |
+| mtd23 | `multi_fota` | 7.25 MB | FOTA (firmware over-the-air) |
+| mtd24 | `misc` | 1.25 MB | Misc/recovery flags |
+| mtd25 | `ipa_fw` | 1.25 MB | IPA (network accelerator) firmware |
+| mtd26 | `usb_qti` | 1.25 MB | USB QTI configuration |
+| mtd27 | `boot_a` | 12 MB | Linux kernel, slot A |
+| mtd28 | `boot_b` | 12 MB | Linux kernel, slot B |
+| mtd29 | `system_a` | 123 MB | Root filesystem UBI, slot A |
+| mtd30 | `system_b` | 123 MB | Root filesystem UBI, slot B |
+| mtd31 | `usrdata` | 173.75 MB | Persistent user data UBI |
 
-Additional standard Qualcomm partitions (SBL, TZ, RPM, APPSBL, etc.) are present but not documented here as they are not user-accessible.
+**Size breakdown:** SoC/bootloader partitions (mtd0–mtd26) ~53 MB, boot images ~24 MB, system slots ~246 MB, usrdata ~174 MB. Note: `oemdata` is not a separate MTD partition on this hardware revision — the init scripts fall back to `/usrdata/cdcs` for Casa OEM configuration.
 
 ### UBI Volume Map
 
@@ -126,6 +151,19 @@ OTA updates are handled by `/sbin/flashtool`, which writes to the **inactive** s
 
 For `--factory` installs, both slots are flashed with the same image.
 
+## Free Space (Live Measurement)
+
+Captured from a live device running USC 1.2.24.0 (March 2026):
+
+| Mount | Total | Used | Free | Use% |
+|-------|-------|------|------|------|
+| `/usrdata` | 144.4 MB | 1.8 MB | 137.9 MB | 1% |
+| `/rw/local` (volatile) | 7.1 MB | 176 KB | 6.5 MB | 3% |
+
+The `usrdata` UBIFS volume provides ~144 MB usable out of the 174 MB MTD partition after UBI overhead (bad block reserves of 40 PEBs = 10 MB, plus journal and metadata). The `volatile` overlay backing `/etc` and `/data` changes is limited to ~7 MB.
+
+On a near-stock device, `/usrdata` is almost empty (~1% used). Most of that 1.8 MB is the Casa device configuration store (`/usrdata/cdcs`), logs, and persist data.
+
 ## Compatibility Notes
 
 - The Casa partition layout is **incompatible** with stock Quectel RG520N firmware packages. Boot partition sizes differ (12 MB vs 15 MB), and Casa adds/removes partitions compared to stock.
@@ -134,7 +172,7 @@ For `--factory` installs, both slots are flashed with the same image.
 
 ## Sources
 
-Reverse-engineered from firmware versions USC 1.1.79.0, 1.1.99.0, and 1.2.24.0. Key files analyzed:
+Reverse-engineered from firmware versions USC 1.1.79.0, 1.1.99.0, and 1.2.24.0, plus live device inspection. Key files analyzed:
 
 - `/etc/variant.sh` — build-time storage parameters
 - `/sbin/flashtool` — firmware update tool
