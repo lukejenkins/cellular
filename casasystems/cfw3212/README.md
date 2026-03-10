@@ -20,4 +20,5 @@ Originally designed by NetComm Wireless, acquired by Casa Systems (now DZS).
 |----------|-------------|
 | [flash_layout.md](flash_layout.md) | NAND flash partition map, UBI volumes, and A/B boot scheme |
 | [guide_block_carrier_remote_mgmt.md](guide_block_carrier_remote_mgmt.md) | How to block TR-069 and LwM2M carrier remote management |
+| [screenshots/](screenshots/README.md) | Web UI screenshots (42 images, all pages, sensitive fields redacted) |
 | [tools/unlock_cfw3212.py](tools/unlock_cfw3212.py) | Root unlock script (config restore with injected root hash) |
