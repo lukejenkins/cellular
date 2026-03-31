@@ -54,12 +54,18 @@ These commands query the modem's current serving cell and return immediately
 | Vendor | Model | Command | WiGLE Complete | RAT W | MCC W | MNC W | CID W | TAC W | PCI | EARFCN W | Band | RSRP W | RSRQ | RSSI | SINR | DL BW | UL BW | Duplex | Operator | DRX | TX Pwr | srxlev | CQI | MIMO | CA | Source |
 |--------|-------|---------|:-----:|:---:|:---:|:---:|:---:|:---:|:---:|:------:|:----:|:----:|:----:|:----:|:----:|:-----:|:-----:|:------:|:--------:|:---:|:------:|:------:|:---:|:----:|:--:|--------|
 | Fibocom | L850-GL/L860-GL | `AT+XCELLINFO?` | Y | Y | Y | Y | Y | Y | Y | Y | - | Y | Y | - | - | - | - | - | - | - | - | - | - | - | - | V2.0.2 §10.1.12 |
-| Quectel | EC2x/EG2x/EG9x/EM05 | `AT+QENG="servingcell"` | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | - | - | - | Y | - | - | - | V2.1 §6.18 |
+| Quectel | BG95-M3/BG77/BG600L | `AT+QCSQ` | N | Y | - | - | - | - | - | - | - | Y | Y | Y | Y | - | - | - | - | - | - | - | - | - | - | V2.0 §4.7 |
+| Quectel | EC2x/EG2x/EG9x/EM05/EP06 | `AT+QENG="servingcell"` | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | - | - | - | Y | - | - | - | V2.1 §6.18 |
+| Quectel | EG12/EM12/EG18 | `AT+QENG="servingcell"` | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | - | - | - | Y | Y | - | - | V1.1 §6.18 |
+| Quectel | RG520N/RM520N (LTE) | `AT+QENG="servingcell"` | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | - | - | - | Y | Y | - | - | V1.1 §5 |
+| Quectel | RG520N/RM520N (NR5G-SA) | `AT+QENG="servingcell"` | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | - | Y | Y | - | Y | - | - | - | Y | - | - | - | V1.1 §5 |
+| Quectel | RG520N/RM520N (ENDC) | `AT+QENG="servingcell"` | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | - | - | - | Y | Y | - | - | V1.1 §5 |
 | Quectel | RM500Q/RM502Q (LTE) | `AT+QENG="servingcell"` | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | - | - | - | Y | - | - | - | V1.2 §5 |
 | Quectel | RM500Q/RM502Q (NR5G-SA) | `AT+QENG="servingcell"` | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | - | Y | Y | - | Y | - | - | - | Y | - | - | - | V1.2 §5 |
-| Sierra | EM74xx/MC74xx | `AT!GSTATUS?` | P | Y | - | - | Y | Y | - | D | Y | Y | Y | Y | Y | Y | - | - | - | - | - | - | - | - | Y | r4 |
+| Sierra | EM74xx/MC74xx/EM7511/MC7411 | `AT!GSTATUS?` | P | Y | - | - | Y | Y | - | D | Y | Y | Y | Y | Y | Y | - | - | - | - | - | - | - | - | Y | r4 |
 | Sierra | EM9190 (LTE) | `AT!GSTATUS?` | P | Y | - | - | Y | Y | - | D | Y | Y | Y | Y | Y | Y | - | - | - | - | - | - | - | - | Y | Rev.5 |
 | Sierra | EM9190 | `AT!NRINFO?` | P | Y | - | - | Y | - | - | Y | Y | Y | Y | Y | Y | Y | Y | - | - | - | Y | - | - | Y | - | Rev.5 |
+| SIMCom | SIM7070/SIM7080/SIM7090 | `AT+CPSI?` | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | - | - | - | - | - | - | - | - | V1.08 §4.2.14 |
 | SIMCom | SIM7500/SIM7600 | `AT+CPSI?` | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | - | - | - | - | - | - | - | - | V3.00 §4.2.14 |
 | Telit | FN980m (ENDC) | `AT#RFSTS` | Y | Y | Y | Y | Y | Y | - | Y | Y | Y | Y | Y | - | - | - | Y | Y | Y | Y | - | - | - | - | Rev.5 |
 | Telit | FN980m (ENDC) | `AT#SERVINFO` | Y | Y | Y | Y | Y | Y | - | Y | - | Y | Y | Y | - | - | - | - | Y | Y | - | - | - | - | - | Rev.5 |
@@ -76,7 +82,11 @@ These commands query the modem's current serving cell and return immediately
 - Telit FN980m `AT#LTEDS` — returns 26 fields total including MCS, modulation, BLER — the most detailed single-command status on the FN980m.
 - Sierra EM74xx/MC74xx `AT!GSTATUS?` — also reports carrier aggregation SCC1-4 with per-SCC band, RSSI, and RSRP.
 - Sierra EM9190 `AT!NRINFO?` — reports per-antenna RSSI (RxM, RxD, RxM1, RxD1 for sub-6; Rx0, Rx1 for mmW).
-- Quectel RM500Q `AT+QENG="servingcell"` — response format varies by RAT (LTE vs NR5G-SA vs NR5G-NSA each have different field layouts).
+- Quectel RM500Q/RG520N `AT+QENG="servingcell"` — response format varies by RAT (LTE vs NR5G-SA vs NR5G-NSA each have different field layouts).
+- Quectel EG12/EM12/EG18 `AT+QENG="servingcell"` — adds CQI and TX power fields compared to the EC2x family.
+- Quectel RG520N/RM520N `AT+QENG="servingcell"` (ENDC) — returns two `+QENG:` blocks: LTE serving cell followed by NR5G-NSA secondary cell.
+- Quectel BG95-M3/BG77/BG600L `AT+QCSQ` — NB-IoT/Cat-M modules. Returns signal metrics only (RSSI, RSRP, SINR, RSRQ). No cell identity, no EARFCN. **Not WiGLE-capable** — these LPWA modules lack `AT+QENG` entirely.
+- SIMCom SIM7080G `AT+CPSI?` — NB-IoT/Cat-M module. Returns full serving cell identity including TAC, CellID, PCI, EARFCN, RSRP. WiGLE-complete despite being an LPWA module.
 - eNB ID and Sector ID are derivable from CID on all modems: `eNB_ID = CID >> 8`, `Sector_ID = CID & 0xFF`.
 
 ---
@@ -90,10 +100,13 @@ Sub-second response time.
 |--------|-------|---------|:-----:|:------:|:---:|:----:|:----:|:----:|:----:|:---:|:---:|:---:|:---:|:----:|:--------:|:---:|:--------------------:|--------|
 | Fibocom | L850-GL/L860-GL | `AT+XCELLINFO?` (neighbor) | N | Y | Y | Y | Y | - | - | - | - | - | - | - | - | - | - | V2.0.2 §10.1.12 |
 | Fibocom | L850-GL/L860-GL | `AT+XMCI=1` (neighbor) | Y | Y | Y | Y | Y | - | Y | Y | Y | Y | Y | D | Y | Y | - | V2.0.2 §10.1.24 |
-| Quectel | EC2x/EG2x/EG9x/EM05 | `AT+QENG="neighbourcell"` | N | Y | Y | Y | Y | Y | Y | - | - | - | - | - | - | - | - | V2.1 §6.18 |
+| Quectel | EC2x/EG2x/EG9x/EM05/EP06 | `AT+QENG="neighbourcell"` | N | Y | Y | Y | Y | Y | Y | - | - | - | - | - | - | - | - | V2.1 §6.18 |
+| Quectel | EG12/EM12/EG18 | `AT+QENG="neighbourcell"` | N | Y | Y | Y | Y | Y | Y | - | - | - | - | - | - | - | - | V1.1 §6.18 |
+| Quectel | RG520N/RM520N | `AT+QENG="neighbourcell"` | N | Y | Y | Y | Y | Y | Y | - | - | - | - | - | - | - | - | V1.1 §5 |
 | Quectel | RM500Q/RM502Q | `AT+QENG="neighbourcell"` | N | Y | Y | Y | Y | Y | Y | - | - | - | - | - | - | - | - | V1.2 §5 |
-| Sierra | EM74xx/MC74xx | `AT!LTEINFO?` (intra-freq) | Y | Y | Y | Y | Y | Y | - | Y | Y | Y | Y | Y | - | - | Y | r4 |
-| Sierra | EM74xx/MC74xx | `AT!LTEINFO?` (inter-freq) | Y | Y | Y | Y | Y | Y | - | Y | Y | Y | Y | Y | - | - | Y | r4 |
+| Sierra | EM74xx/MC74xx/EM7511/MC7411 | `AT!LTEINFO?` (intra-freq) | Y | Y | Y | Y | Y | Y | - | Y | Y | Y | Y | Y | - | - | Y | r4 |
+| Sierra | EM74xx/MC74xx/EM7511/MC7411 | `AT!LTEINFO?` (inter-freq) | Y | Y | Y | Y | Y | Y | - | Y | Y | Y | Y | Y | - | - | Y | r4 |
+| SIMCom | SIM7070/SIM7080/SIM7090 | `AT+CENG` (neighbor) | N | Y | Y | Y | Y | - | Y | - | - | - | - | - | - | - | - | V1.08 §4 |
 | Telit | LM960 | `AT#MONI` (mode 1, intra-freq) | N | Y | Y | Y | Y | Y | - | - | - | - | - | - | - | - | - | Rev.8 §5.6.1.24 |
 | Telit | LM960 | `AT#MONI` (mode 2, inter-freq) | N | Y | Y | Y | Y | Y | - | - | - | - | - | - | - | - | - | Rev.8 §5.6.1.24 |
 
@@ -104,6 +117,7 @@ Sub-second response time.
 - Telit LM960 `AT#MONI` modes 3 and 4 — return WCDMA and GSM inter-RAT neighbors respectively.
 - Sierra EM74xx/MC74xx `AT!LTEINFO?` — the most complete neighbor command; returns full identity (MCC/MNC/CID/TAC) for all neighbor types including inter-RAT (GSM, WCDMA, CDMA).
 - Fibocom L850-GL/L860-GL `AT+XMCI=1` — differentiates cell types by a TYPE field: 4=LTE serving, 5=LTE neighbor.
+- SIMCom SIM7080G `AT+CENG` — engineering mode neighbor reporting. Enable with `AT+CENG=1,1`. Neighbor entries return EARFCN, PCI, RSRP, RSSI, RSRQ, SINR but lack MCC/MNC/CID/TAC.
 
 ---
 
@@ -206,12 +220,15 @@ port and miss cells as you move.
 
 | Vendor | Model | Serving (every 2s) | Neighbors (every 5s) |
 |--------|-------|--------------------|----------------------|
-| Quectel | EC2x/EG2x/EG9x/EM05 | `AT+QENG="servingcell"` | `AT+QENG="neighbourcell"` |
-| Quectel | RM500Q/RM502Q | `AT+QENG="servingcell"` | `AT+QENG="neighbourcell"` |
-| Telit | LM960 | `AT#RFSTS` | `AT#MONI` (modes 1+2) |
-| Sierra | EM74xx/MC74xx | `AT!GSTATUS?` | `AT!LTEINFO?` |
 | Fibocom | L850-GL/L860-GL | `AT+XCELLINFO?` | `AT+XMCI=1` |
+| Quectel | EC2x/EG2x/EG9x/EM05/EP06 | `AT+QENG="servingcell"` | `AT+QENG="neighbourcell"` |
+| Quectel | EG12/EM12/EG18 | `AT+QENG="servingcell"` | `AT+QENG="neighbourcell"` |
+| Quectel | RG520N/RM520N | `AT+QENG="servingcell"` | `AT+QENG="neighbourcell"` |
+| Quectel | RM500Q/RM502Q | `AT+QENG="servingcell"` | `AT+QENG="neighbourcell"` |
+| Sierra | EM74xx/MC74xx/EM7511/MC7411 | `AT!GSTATUS?` | `AT!LTEINFO?` |
+| SIMCom | SIM7070/SIM7080/SIM7090 | `AT+CPSI?` | `AT+CENG` |
 | SIMCom | SIM7500/SIM7600 | `AT+CPSI?` | (not available) |
+| Telit | LM960 | `AT#RFSTS` | `AT#MONI` (modes 1+2) |
 
 ### Stationary (fixed-location survey)
 
@@ -221,8 +238,9 @@ barred cells, low-priority cells).
 
 | Vendor | Model | Serving (2s) | Neighbors (5s) | Full Scan (every 60-120s) |
 |--------|-------|-------------|----------------|---------------------------|
+| Quectel | EC2x/EG2x/EG9x/EM05/EP06 | `AT+QENG="servingcell"` | `AT+QENG="neighbourcell"` | `AT+QOPS` |
+| Quectel | EG12/EM12/EG18 | `AT+QENG="servingcell"` | `AT+QENG="neighbourcell"` | (not available) |
 | Quectel | RM500Q/RM502Q | `AT+QENG="servingcell"` | `AT+QENG="neighbourcell"` | `AT+QSCAN=3,1` |
-| Quectel | EC2x/EG2x/EG9x/EM05 | `AT+QENG="servingcell"` | `AT+QENG="neighbourcell"` | `AT+QOPS` |
 | Telit | LM960 | `AT#RFSTS` | `AT#MONI` (modes 1+2) | `AT#CSURVC` |
 
 ### Multi-modem
@@ -276,8 +294,11 @@ per carrier maximizes coverage. If two modems observe the same cell tower
 
 | Vendor | Document | Version | Date | Filename |
 |--------|----------|---------|------|----------|
-| Quectel | *RG50xQ&RM5xxQ Series AT Commands Manual* | V1.2 | 2021-08-09 | `Quectel_RG50xQ_RM5xxQ_Series_AT_Commands_Manual_V1.2.pdf` |
+| Quectel | *BG95&BG77&BG600L Series AT Commands Manual* | V2.0 | (see file) | `Quectel_BG95BG77BG600L_Series_AT_Commands_Manual_V2.0.pdf` |
 | Quectel | *EC2x&EG2x&EG9x&EM05 Series AT Commands Manual* | V2.1 | 2025-03-21 | `Quectel_EC2xEG2xEG9xEM05_Series_AT_Commands_Manual_V2.1.pdf` |
+| Quectel | *EM12&EG12&EG18 Series AT Commands Manual* | V1.1 | (see file) | `Quectel_EM12EG12EG18_Series_AT_Commands_Manual_V1.1.pdf` |
+| Quectel | *RG520N&RG525F&RG5x0F&RM5x0N Series AT Commands Manual* | V1.1 | (see file) | `Quectel_RG520NRG525FRG5x0FRM5x0N_Series_AT_Commands_Manual_V1.1.pdf` |
+| Quectel | *RG50xQ&RM5xxQ Series AT Commands Manual* | V1.2 | 2021-08-09 | `Quectel_RG50xQ_RM5xxQ_Series_AT_Commands_Manual_V1.2.pdf` |
 | Telit | *LM960 Series AT Command Reference Guide* | Rev.8 | 2022-03-21 | `Telit_LM960_Series_AT_Command_Reference_Guide_r8.pdf` |
 | Telit | *FN980 Family AT Commands Reference Guide* | Rev.5 | (see file) | `telit_fn980_family_at_commands_reference_guide_r5.pdf` |
 | Telit | *LE910Cx AT Commands Reference Guide* | Rev.18 | (see file) | `Telit_LE910Cx_AT_Commands_Reference_Guide_r18.pdf` |
@@ -285,6 +306,7 @@ per carrier maximizes coverage. If two modems observe the same cell tower
 | Sierra | *EM919x AT Command Reference* | Rev.5 | (see file) | `41113480-EM919x-7690-AT-Command-Reference-Rev5.pdf` |
 | Fibocom | *L8 Family AT Commands Manual* | V2.0.2 | (see file) | (in knowledge base) |
 | Fibocom | *L860-GL AT Commands Manual* | V3.2.3 | (see file) | `L860GL-AT-Commands_V3.2.3.pdf` |
+| SIMCom | *SIM7070/SIM7080/SIM7090 Series AT Command Manual* | V1.08 | (see file) | `SIM7070_SIM7080_SIM7090_Series_AT_Command_Manual_V1.08.pdf` |
 | SIMCom | *SIM7500/SIM7600 Series AT Command Manual* | V3.00 | (see file) | `SIM7500_SIM7600-Series_AT-Command-Manual_V3.00.pdf` |
 | 3GPP | *TS 27.007 — AT command set for UE* | (various) | — | Standard |
 | 3GPP | *TS 36.101 — E-UTRA UE radio transmission and reception* | (various) | — | Table 5.7.3-1 (EARFCN-to-frequency) |
