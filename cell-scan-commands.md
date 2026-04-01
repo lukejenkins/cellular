@@ -69,6 +69,9 @@ These commands query the modem's current serving cell and return immediately
 | Sierra | EM92 (EM9291/EM9293) | `AT!NRINFO?` | P | Y | - | - | Y | - | - | Y | Y | Y | Y | Y | Y | Y | Y | - | - | - | Y | - | - | Y | - | r14 |
 | SIMCom | SIM7070/SIM7080/SIM7090 | `AT+CPSI?` | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | - | - | - | - | - | - | - | - | V1.08 §4.2.14 |
 | SIMCom | SIM7500/SIM7600 | `AT+CPSI?` | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | - | - | - | - | - | - | - | - | V3.00 §4.2.14 |
+| SIMCom | SIM82XX/SIM83XX (LTE) | `AT+CPSI?` | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | - | - | - | - | - | - | - | - | V1.02 §4 |
+| SIMCom | SIM82XX/SIM83XX (NR5G-SA) | `AT+CPSI?` | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | - | Y | - | - | - | - | - | - | - | - | - | - | V1.02 §4 |
+| SIMCom | SIM82XX/SIM83XX (ENDC) | `AT+CPSI?` | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | - | - | - | - | - | - | - | - | V1.02 §4 |
 | Telit | FN980m (ENDC) | `AT#RFSTS` | Y | Y | Y | Y | Y | Y | - | Y | Y | Y | Y | Y | - | - | - | Y | Y | Y | Y | - | - | - | - | Rev.5 |
 | Telit | FN980m (ENDC) | `AT#SERVINFO` | Y | Y | Y | Y | Y | Y | - | Y | - | Y | Y | Y | - | - | - | - | Y | Y | - | - | - | - | - | Rev.5 |
 | Telit | FN980m (LTE) | `AT#RFSTS` | Y | Y | Y | Y | Y | Y | - | Y | Y | Y | Y | Y | - | - | - | Y | Y | Y | Y | - | - | - | - | Rev.5 |
@@ -92,6 +95,7 @@ These commands query the modem's current serving cell and return immediately
 - Quectel RG520N/RM520N `AT+QENG="servingcell"` (ENDC) — returns two `+QENG:` blocks: LTE serving cell followed by NR5G-NSA secondary cell.
 - Quectel BG95-M3/BG77/BG600L `AT+QCSQ` — NB-IoT/Cat-M modules. Returns signal metrics only (RSSI, RSRP, SINR, RSRQ). No cell identity, no EARFCN. **Not WiGLE-capable** — these LPWA modules lack `AT+QENG` entirely.
 - SIMCom SIM7080G `AT+CPSI?` — NB-IoT/Cat-M module. Returns full serving cell identity including TAC, CellID, PCI, EARFCN, RSRP. WiGLE-complete despite being an LPWA module.
+- SIMCom SIM82XX/SIM83XX `AT+CPSI?` — 5G module (SIM8260, SIM8262, SIM8230, etc.). In ENDC mode returns two `+CPSI:` lines: LTE anchor + NR5G-NSA secondary. NR5G-SA format omits RSSI, DL/UL BW. No neighbor cell command is available on this family.
 - eNB ID and Sector ID are derivable from CID on all modems: `eNB_ID = CID >> 8`, `Sector_ID = CID & 0xFF`.
 
 ---
@@ -236,6 +240,7 @@ port and miss cells as you move.
 | Sierra | EM91/EM92 | `AT!GSTATUS?` + `AT!NRINFO?` | `AT!LTEINFO?` |
 | SIMCom | SIM7070/SIM7080/SIM7090 | `AT+CPSI?` | `AT+CENG` |
 | SIMCom | SIM7500/SIM7600 | `AT+CPSI?` | (not available) |
+| SIMCom | SIM82XX/SIM83XX | `AT+CPSI?` | (not available) |
 | Telit | LM960 | `AT#RFSTS` | `AT#MONI` (modes 1+2) |
 
 ### Stationary (fixed-location survey)
@@ -316,6 +321,7 @@ per carrier maximizes coverage. If two modems observe the same cell tower
 | Fibocom | *L860-GL AT Commands Manual* | V3.2.3 | (see file) | `L860GL-AT-Commands_V3.2.3.pdf` |
 | SIMCom | *SIM7070/SIM7080/SIM7090 Series AT Command Manual* | V1.08 | (see file) | `SIM7070_SIM7080_SIM7090_Series_AT_Command_Manual_V1.08.pdf` |
 | SIMCom | *SIM7500/SIM7600 Series AT Command Manual* | V3.00 | (see file) | `SIM7500_SIM7600-Series_AT-Command-Manual_V3.00.pdf` |
+| SIMCom | *SIM82XX&SIM83XX Series AT Command Manual* | V1.02 | (see file) | `SIM82XX_SIM83XX_Series_AT_Command_Manual_V1.02.pdf` |
 | 3GPP | *TS 27.007 — AT command set for UE* | (various) | — | Standard |
 | 3GPP | *TS 36.101 — E-UTRA UE radio transmission and reception* | (various) | — | Table 5.7.3-1 (EARFCN-to-frequency) |
 | 3GPP | *TS 36.304 — UE procedures in idle mode* | (various) | — | srxlev, squal definitions |
