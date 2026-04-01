@@ -57,9 +57,9 @@ These commands query the modem's current serving cell and return immediately
 | Quectel | BG95-M3/BG77/BG600L | `AT+QCSQ` | N | Y | - | - | - | - | - | - | - | Y | Y | Y | Y | - | - | - | - | - | - | - | - | - | - | V2.0 §4.7 |
 | Quectel | EC2x/EG2x/EG9x/EM05/EP06 | `AT+QENG="servingcell"` | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | - | - | - | Y | - | - | - | V2.1 §6.18 |
 | Quectel | EG12/EM12/EG18 | `AT+QENG="servingcell"` | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | - | - | - | Y | Y | - | - | V1.1 §6.18 |
-| Quectel | RG520N/RM520N (LTE) | `AT+QENG="servingcell"` | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | - | - | - | Y | Y | - | - | V1.1 §5 |
-| Quectel | RG520N/RM520N (NR5G-SA) | `AT+QENG="servingcell"` | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | - | Y | Y | - | Y | - | - | - | Y | - | - | - | V1.1 §5 |
-| Quectel | RG520N/RM520N (ENDC) | `AT+QENG="servingcell"` | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | - | - | - | Y | Y | - | - | V1.1 §5 |
+| Quectel | RG520N/RM520N/RM530N (LTE) | `AT+QENG="servingcell"` | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | - | - | - | Y | Y | - | - | V1.1 §5 |
+| Quectel | RG520N/RM520N/RM530N (NR5G-SA) | `AT+QENG="servingcell"` | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | - | Y | Y | - | Y | - | - | - | Y | - | - | - | V1.1 §5 |
+| Quectel | RG520N/RM520N/RM530N (ENDC) | `AT+QENG="servingcell"` | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | - | - | - | Y | Y | - | - | V1.1 §5 |
 | Quectel | RM500Q/RM502Q (LTE) | `AT+QENG="servingcell"` | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | - | - | - | Y | - | - | - | V1.2 §5 |
 | Quectel | RM500Q/RM502Q (NR5G-SA) | `AT+QENG="servingcell"` | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | - | Y | Y | - | Y | - | - | - | Y | - | - | - | V1.2 §5 |
 | Sierra | EM74xx/MC74xx/EM7511/MC7411 | `AT!GSTATUS?` | P | Y | - | - | Y | Y | - | D | Y | Y | Y | Y | Y | Y | - | - | - | - | - | - | - | - | Y | r4 |
@@ -92,7 +92,7 @@ These commands query the modem's current serving cell and return immediately
 - Sierra EM91/EM92 `AT!NRPCI` — returns 5G NR Physical Cell IDs for PCC + all SCCs (added in r14 Rev.10).
 - Quectel RM500Q/RG520N `AT+QENG="servingcell"` — response format varies by RAT (LTE vs NR5G-SA vs NR5G-NSA each have different field layouts).
 - Quectel EG12/EM12/EG18 `AT+QENG="servingcell"` — adds CQI and TX power fields compared to the EC2x family.
-- Quectel RG520N/RM520N `AT+QENG="servingcell"` (ENDC) — returns two `+QENG:` blocks: LTE serving cell followed by NR5G-NSA secondary cell.
+- Quectel RG520N/RM520N/RM530N `AT+QENG="servingcell"` (ENDC) — returns two `+QENG:` blocks: LTE serving cell followed by NR5G-NSA secondary cell. RM530N-GL adds mmW (FR2) band support but uses the same AT command interface as the sub-6 models.
 - Quectel BG95-M3/BG77/BG600L `AT+QCSQ` — NB-IoT/Cat-M modules. Returns signal metrics only (RSSI, RSRP, SINR, RSRQ). No cell identity, no EARFCN. **Not WiGLE-capable** — these LPWA modules lack `AT+QENG` entirely.
 - SIMCom SIM7080G `AT+CPSI?` — NB-IoT/Cat-M module. Returns full serving cell identity including TAC, CellID, PCI, EARFCN, RSRP. WiGLE-complete despite being an LPWA module.
 - SIMCom SIM82XX/SIM83XX `AT+CPSI?` — 5G module (SIM8260, SIM8262, SIM8230, etc.). In ENDC mode returns two `+CPSI:` lines: LTE anchor + NR5G-NSA secondary. NR5G-SA format omits RSSI, DL/UL BW. No neighbor cell command is available on this family.
@@ -111,7 +111,7 @@ Sub-second response time.
 | Fibocom | L850-GL/L860-GL | `AT+XMCI=1` (neighbor) | Y | Y | Y | Y | Y | - | Y | Y | Y | Y | Y | D | Y | Y | - | V2.0.2 §10.1.24 |
 | Quectel | EC2x/EG2x/EG9x/EM05/EP06 | `AT+QENG="neighbourcell"` | N | Y | Y | Y | Y | Y | Y | - | - | - | - | - | - | - | - | V2.1 §6.18 |
 | Quectel | EG12/EM12/EG18 | `AT+QENG="neighbourcell"` | N | Y | Y | Y | Y | Y | Y | - | - | - | - | - | - | - | - | V1.1 §6.18 |
-| Quectel | RG520N/RM520N | `AT+QENG="neighbourcell"` | N | Y | Y | Y | Y | Y | Y | - | - | - | - | - | - | - | - | V1.1 §5 |
+| Quectel | RG520N/RM520N/RM530N | `AT+QENG="neighbourcell"` | N | Y | Y | Y | Y | Y | Y | - | - | - | - | - | - | - | - | V1.1 §5 |
 | Quectel | RM500Q/RM502Q | `AT+QENG="neighbourcell"` | N | Y | Y | Y | Y | Y | Y | - | - | - | - | - | - | - | - | V1.2 §5 |
 | Sierra | EM74xx/MC74xx/EM7511/MC7411 | `AT!LTEINFO?` (intra-freq) | Y | Y | Y | Y | Y | Y | - | Y | Y | Y | Y | Y | - | - | Y | r4 |
 | Sierra | EM74xx/MC74xx/EM7511/MC7411 | `AT!LTEINFO?` (inter-freq) | Y | Y | Y | Y | Y | Y | - | Y | Y | Y | Y | Y | - | - | Y | r4 |
@@ -234,7 +234,7 @@ port and miss cells as you move.
 | Fibocom | L850-GL/L860-GL | `AT+XCELLINFO?` | `AT+XMCI=1` |
 | Quectel | EC2x/EG2x/EG9x/EM05/EP06 | `AT+QENG="servingcell"` | `AT+QENG="neighbourcell"` |
 | Quectel | EG12/EM12/EG18 | `AT+QENG="servingcell"` | `AT+QENG="neighbourcell"` |
-| Quectel | RG520N/RM520N | `AT+QENG="servingcell"` | `AT+QENG="neighbourcell"` |
+| Quectel | RG520N/RM520N/RM530N | `AT+QENG="servingcell"` | `AT+QENG="neighbourcell"` |
 | Quectel | RM500Q/RM502Q | `AT+QENG="servingcell"` | `AT+QENG="neighbourcell"` |
 | Sierra | EM74xx/MC74xx/EM7511/MC7411 | `AT!GSTATUS?` | `AT!LTEINFO?` |
 | Sierra | EM91/EM92 | `AT!GSTATUS?` + `AT!NRINFO?` | `AT!LTEINFO?` |
