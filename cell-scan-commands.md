@@ -63,8 +63,10 @@ These commands query the modem's current serving cell and return immediately
 | Quectel | RM500Q/RM502Q (LTE) | `AT+QENG="servingcell"` | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | - | - | - | Y | - | - | - | V1.2 §5 |
 | Quectel | RM500Q/RM502Q (NR5G-SA) | `AT+QENG="servingcell"` | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | - | Y | Y | - | Y | - | - | - | Y | - | - | - | V1.2 §5 |
 | Sierra | EM74xx/MC74xx/EM7511/MC7411 | `AT!GSTATUS?` | P | Y | - | - | Y | Y | - | D | Y | Y | Y | Y | Y | Y | - | - | - | - | - | - | - | - | Y | r4 |
-| Sierra | EM9190 (LTE) | `AT!GSTATUS?` | P | Y | - | - | Y | Y | - | D | Y | Y | Y | Y | Y | Y | - | - | - | - | - | - | - | - | Y | Rev.5 |
-| Sierra | EM9190 | `AT!NRINFO?` | P | Y | - | - | Y | - | - | Y | Y | Y | Y | Y | Y | Y | Y | - | - | - | Y | - | - | Y | - | Rev.5 |
+| Sierra | EM91 (EM9190/EM9191/EM7690) | `AT!GSTATUS?` | P | Y | - | - | Y | Y | - | D | Y | Y | Y | Y | Y | Y | - | - | - | - | - | - | - | - | Y | r14 |
+| Sierra | EM91 (EM9190/EM9191/EM7690) | `AT!NRINFO?` | P | Y | Y | Y | Y | - | - | Y | Y | Y | Y | Y | Y | Y | Y | - | - | - | Y | - | - | Y | - | r14 |
+| Sierra | EM92 (EM9291/EM9293) | `AT!GSTATUS?` | P | Y | - | - | Y | Y | - | D | Y | Y | Y | Y | Y | Y | - | - | - | - | - | - | - | - | Y | r14 |
+| Sierra | EM92 (EM9291/EM9293) | `AT!NRINFO?` | P | Y | - | - | Y | - | - | Y | Y | Y | Y | Y | Y | Y | Y | - | - | - | Y | - | - | Y | - | r14 |
 | SIMCom | SIM7070/SIM7080/SIM7090 | `AT+CPSI?` | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | - | - | - | - | - | - | - | - | V1.08 §4.2.14 |
 | SIMCom | SIM7500/SIM7600 | `AT+CPSI?` | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | - | - | - | - | - | - | - | - | V3.00 §4.2.14 |
 | Telit | FN980m (ENDC) | `AT#RFSTS` | Y | Y | Y | Y | Y | Y | - | Y | Y | Y | Y | Y | - | - | - | Y | Y | Y | Y | - | - | - | - | Rev.5 |
@@ -81,7 +83,10 @@ These commands query the modem's current serving cell and return immediately
 - Telit FN980m `AT#SERVINFO` (ENDC) — appends: NR channel, NR RSSI, NR RSRP, NR RSRQ. NR SA mode returns only 5 NR-specific fields.
 - Telit FN980m `AT#LTEDS` — returns 26 fields total including MCS, modulation, BLER — the most detailed single-command status on the FN980m.
 - Sierra EM74xx/MC74xx `AT!GSTATUS?` — also reports carrier aggregation SCC1-4 with per-SCC band, RSSI, and RSRP.
-- Sierra EM9190 `AT!NRINFO?` — reports per-antenna RSSI (RxM, RxD, RxM1, RxD1 for sub-6; Rx0, Rx1 for mmW).
+- Sierra EM91 `AT!NRINFO?` — reports MCC-MNC in 5G SA mode only. Reports per-antenna RSSI (RxM, RxD, RxM1, RxD1 for sub-6; Rx0, Rx1 for mmW). Cell ID is PCI (0-1007).
+- Sierra EM92 `AT!NRINFO?` — Cell ID is 64-bit Global Cell ID (hex/decimal), not PCI. Does not report MCC-MNC. Otherwise same format as EM91.
+- Sierra EM91/EM92 `AT!LTEINFO?` — r14 adds CA SCell section (EARFCN, PCI, band, MIMO layers, RSRP, RSSI, SINR) and WCDMA neighbor reporting.
+- Sierra EM91/EM92 `AT!NRPCI` — returns 5G NR Physical Cell IDs for PCC + all SCCs (added in r14 Rev.10).
 - Quectel RM500Q/RG520N `AT+QENG="servingcell"` — response format varies by RAT (LTE vs NR5G-SA vs NR5G-NSA each have different field layouts).
 - Quectel EG12/EM12/EG18 `AT+QENG="servingcell"` — adds CQI and TX power fields compared to the EC2x family.
 - Quectel RG520N/RM520N `AT+QENG="servingcell"` (ENDC) — returns two `+QENG:` blocks: LTE serving cell followed by NR5G-NSA secondary cell.
@@ -106,6 +111,8 @@ Sub-second response time.
 | Quectel | RM500Q/RM502Q | `AT+QENG="neighbourcell"` | N | Y | Y | Y | Y | Y | Y | - | - | - | - | - | - | - | - | V1.2 §5 |
 | Sierra | EM74xx/MC74xx/EM7511/MC7411 | `AT!LTEINFO?` (intra-freq) | Y | Y | Y | Y | Y | Y | - | Y | Y | Y | Y | Y | - | - | Y | r4 |
 | Sierra | EM74xx/MC74xx/EM7511/MC7411 | `AT!LTEINFO?` (inter-freq) | Y | Y | Y | Y | Y | Y | - | Y | Y | Y | Y | Y | - | - | Y | r4 |
+| Sierra | EM91/EM92 | `AT!LTEINFO?` (intra-freq) | Y | Y | Y | Y | Y | Y | - | Y | Y | Y | Y | Y | - | - | Y | r14 |
+| Sierra | EM91/EM92 | `AT!LTEINFO?` (inter-freq) | Y | Y | Y | Y | Y | Y | - | Y | Y | Y | Y | Y | - | - | Y | r14 |
 | SIMCom | SIM7070/SIM7080/SIM7090 | `AT+CENG` (neighbor) | N | Y | Y | Y | Y | - | Y | - | - | - | - | - | - | - | - | V1.08 §4 |
 | Telit | LM960 | `AT#MONI` (mode 1, intra-freq) | N | Y | Y | Y | Y | Y | - | - | - | - | - | - | - | - | - | Rev.8 §5.6.1.24 |
 | Telit | LM960 | `AT#MONI` (mode 2, inter-freq) | N | Y | Y | Y | Y | Y | - | - | - | - | - | - | - | - | - | Rev.8 §5.6.1.24 |
@@ -226,6 +233,7 @@ port and miss cells as you move.
 | Quectel | RG520N/RM520N | `AT+QENG="servingcell"` | `AT+QENG="neighbourcell"` |
 | Quectel | RM500Q/RM502Q | `AT+QENG="servingcell"` | `AT+QENG="neighbourcell"` |
 | Sierra | EM74xx/MC74xx/EM7511/MC7411 | `AT!GSTATUS?` | `AT!LTEINFO?` |
+| Sierra | EM91/EM92 | `AT!GSTATUS?` + `AT!NRINFO?` | `AT!LTEINFO?` |
 | SIMCom | SIM7070/SIM7080/SIM7090 | `AT+CPSI?` | `AT+CENG` |
 | SIMCom | SIM7500/SIM7600 | `AT+CPSI?` | (not available) |
 | Telit | LM960 | `AT#RFSTS` | `AT#MONI` (modes 1+2) |
@@ -303,7 +311,7 @@ per carrier maximizes coverage. If two modems observe the same cell tower
 | Telit | *FN980 Family AT Commands Reference Guide* | Rev.5 | (see file) | `telit_fn980_family_at_commands_reference_guide_r5.pdf` |
 | Telit | *LE910Cx AT Commands Reference Guide* | Rev.18 | (see file) | `Telit_LE910Cx_AT_Commands_Reference_Guide_r18.pdf` |
 | Sierra | *AirPrime EM75xx/EM-MC74x1 AT Command Reference* | r4 | (see file) | `4117727 AirPrime EM74xx-MC74xx AT Command Reference r3.pdf` |
-| Sierra | *EM919x AT Command Reference* | Rev.5 | (see file) | `41113480-EM919x-7690-AT-Command-Reference-Rev5.pdf` |
+| Sierra | *EM9 AT Command Reference* | r14 | 2026-01 | `41113480 EM9 AT Command Reference r14.pdf` |
 | Fibocom | *L8 Family AT Commands Manual* | V2.0.2 | (see file) | (in knowledge base) |
 | Fibocom | *L860-GL AT Commands Manual* | V3.2.3 | (see file) | `L860GL-AT-Commands_V3.2.3.pdf` |
 | SIMCom | *SIM7070/SIM7080/SIM7090 Series AT Command Manual* | V1.08 | (see file) | `SIM7070_SIM7080_SIM7090_Series_AT_Command_Manual_V1.08.pdf` |
