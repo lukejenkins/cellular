@@ -8,6 +8,7 @@ system and exposes its host interfaces over PCIe/MHI rather than USB.
 
 * Root ADB shell over MHI: See [adb_root_shell.md](./adb_root_shell.md)
 * MHI ↔ TCP ADB bridge script: [mhi_adb_bridge.py](./mhi_adb_bridge.py)
+* foxnv partition dump over ADB: See [foxnv_partition_dump.md](./foxnv_partition_dump.md)
 
 ## Notes
 
