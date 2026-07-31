@@ -53,6 +53,8 @@ These commands query the modem's current serving cell and return immediately
 
 | Vendor | Model | Command | WiGLE Complete | RAT W | MCC W | MNC W | CID W | TAC W | PCI | EARFCN W | Band | RSRP W | RSRQ | RSSI | SINR | DL BW | UL BW | Duplex | Operator | DRX | TX Pwr | srxlev | CQI | MIMO | CA | Source |
 |--------|-------|---------|:-----:|:---:|:---:|:---:|:---:|:---:|:---:|:------:|:----:|:----:|:----:|:----:|:----:|:-----:|:-----:|:------:|:--------:|:---:|:------:|:------:|:---:|:----:|:--:|--------|
+| Compal | RXM-G1 (LTE) | `AT+CEREG=2` | N | Y | - | - | Y | Y | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | observed |
+| Compal | RXM-G1 (NR5G-SA) | `AT+C5GREG=2` | N | Y | - | - | Y | Y | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | observed |
 | Fibocom | L850-GL/L860-GL | `AT+XCELLINFO?` | Y | Y | Y | Y | Y | Y | Y | Y | - | Y | Y | - | - | - | - | - | - | - | - | - | - | - | - | V2.0.2 §10.1.12 |
 | Quectel | BG95-M3/BG77/BG600L | `AT+QCSQ` | N | Y | - | - | - | - | - | - | - | Y | Y | Y | Y | - | - | - | - | - | - | - | - | - | - | V2.0 §4.7 |
 | Quectel | EC2x/EG2x/EG9x/EM05/EP06 | `AT+QENG="servingcell"` | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | Y | - | - | - | Y | - | - | - | V2.1 §6.18 |
@@ -97,6 +99,7 @@ These commands query the modem's current serving cell and return immediately
 - SIMCom SIM7080G `AT+CPSI?` — NB-IoT/Cat-M module. Returns full serving cell identity including TAC, CellID, PCI, EARFCN, RSRP. WiGLE-complete despite being an LPWA module.
 - SIMCom SIM82XX/SIM83XX `AT+CPSI?` — 5G module (SIM8260, SIM8262, SIM8230, etc.). In ENDC mode returns two `+CPSI:` lines: LTE anchor + NR5G-NSA secondary. NR5G-SA format omits RSSI, DL/UL BW. No neighbor cell command is available on this family.
 - eNB ID and Sector ID are derivable from CID on all modems: `eNB_ID = CID >> 8`, `Sector_ID = CID & 0xFF`.
+- Compal RXM-G1 — no vendor-specific serving-cell query exists on this firmware (baseline 3GPP AT set only). `AT+CEREG=2`/`AT+C5GREG=2` give cell identity + tracking area but not MCC/MNC digits, PCI, or EARFCN; pair with `AT+COPS?` for operator name and `AT+CESQ` for RSRP/RSRQ/SINR. Not WiGLE-complete on this modem even combining all available commands — PCI and EARFCN are not exposed over AT at all.
 
 ---
 
@@ -231,6 +234,7 @@ port and miss cells as you move.
 
 | Vendor | Model | Serving (every 2s) | Neighbors (every 5s) |
 |--------|-------|--------------------|----------------------|
+| Compal | RXM-G1 | `AT+CEREG=2` / `AT+C5GREG=2` + `AT+CESQ` | (not available) |
 | Fibocom | L850-GL/L860-GL | `AT+XCELLINFO?` | `AT+XMCI=1` |
 | Quectel | EC2x/EG2x/EG9x/EM05/EP06 | `AT+QENG="servingcell"` | `AT+QENG="neighbourcell"` |
 | Quectel | EG12/EM12/EG18 | `AT+QENG="servingcell"` | `AT+QENG="neighbourcell"` |
