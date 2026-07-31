@@ -52,6 +52,13 @@ Per-module notes: identity, AT commands, firmware captures, and quirks.
   - [Block Carrier Remote Management](/casasystems/cfw3212/guide_block_carrier_remote_mgmt.md)
   - [Web UI Screenshots](/casasystems/cfw3212/screenshots/)
 
+### Compal
+
+- [Compal RXM-G1](/compal/rxm-g1/) — 5G Sub-6 module / CPE gateway (Qualcomm SDX55). USB gadget composition guide (configfs, safe `option` driver binding), AT command reference, C-V2X capability notes.
+  - [USB Composition](/compal/rxm-g1/usb-composition.md)
+  - [AT Commands](/compal/rxm-g1/at_commands.md)
+  - [Publicly Available Docs](/compal/rxm-g1/publicly_available_docs.md)
+
 ### Foxconn
 
 - [Foxconn T99W640](/foxconn/t99w640/) — 5G module. Root ADB shell and `foxnv` partition dump guides.
