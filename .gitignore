@@ -79,3 +79,6 @@ Temporary Items
 
 .env
 
+# Local Claude Code settings (personal, not team config)
+.claude/settings.local.json
+
