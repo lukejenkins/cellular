@@ -34,10 +34,19 @@ Each tool does one thing well and is useful on its own — capture without decod
 
 Task-oriented walkthroughs, drawn from the per-device notes below:
 
-- [Root / ADB shell on a Foxconn T99W640](/foxconn/t99w640/adb_root_shell.md) — get an authenticated root shell on the modem's application processor.
+- [Root / ADB shell on a Foxconn T99W640](/foxconn/t99w640/adb_root_shell.md) — get an unauthenticated root shell on the modem's application processor over ADB-over-MHI.
 - [Dump the `foxnv` partition (Foxconn T99W640)](/foxconn/t99w640/foxnv_partition_dump.md) — pull the modem's NV/config partition for offline analysis.
 - [GNSS on a stripped modem (Orbic RC400L)](/orbic/rc400l/gnss-driver/QMI-LOC-GNSS-Driver.md) — a QMI LOC GNSS driver for MDM9207 devices whose stock GNSS stack was removed.
 - [Block carrier remote management (Casa Systems CFW-3212)](/casasystems/cfw3212/guide_block_carrier_remote_mgmt.md) — stop a carrier from remotely managing a 5G FWA CPE you own.
+
+---
+
+## Kernel patches & host tools
+
+Cross-vendor building blocks, not tied to one device:
+
+- [ADB-over-MHI — root shell on a PCIe/MHI modem](/patches/linux/pcie-mhi/) — patches for Quectel's out-of-tree `pcie_mhi` driver that expose `/dev/mhi_ADB` (channels 36/37), plus a kernel 6.8–7.0 build port. Validated on Quectel RM520N-GL-AP and Foxconn T99W640 / Dell DW5934e.
+- [`mhi-adb` tools](/tools/mhi-adb/) — `mhi_adb_probe.py` (verify adbd is answering on the channel) and `mhi_adb_bridge.py` (relay `/dev/mhi_ADB` to `adb connect 127.0.0.1:6555`).
 
 ---
 

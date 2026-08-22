@@ -1,0 +1,38 @@
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# Patch to Quectel's out-of-tree pcie_mhi driver, which is GPL-2.0-only
+# (copyright "The Linux Foundation" — Qualcomm's kernel-contribution form).
+# The patched work remains GPL-2.0-only. See README.md for the driver
+# release these apply to and its SHA-256. Apply with `patch -p1`.
+#
+# Device-specific example: adds the retail Foxconn T99W640 / Dell DW5934e
+# PCI ID so the OOT driver binds that part. Other modems need their own ID.
+#
+From 0000000000000000000000000000000000000004 Mon Sep 17 00:00:00 2001
+From: Luke Jenkins <lukejenkins@users.noreply.github.com>
+Date: Tue, 10 Jun 2026 00:00:00 +0000
+Subject: [PATCH 4/4] add Foxconn T99W640 / Dell DW5934e retail PCI ID 105b:e11d
+
+The vendored V1.3.8 mhi_qti.c match table lists only Qualcomm-reference
+(0x17cb) and Quectel (0x1eac) device IDs. The retail Foxconn T99W640 /
+Dell DW5934e enumerates as 105b:e11d and is NOT matched, so the pinned OOT
+driver loads but never binds it (no /dev/mhi_* nodes) — observed on the
+retail (DF.001) unit 2026-06-10. Add the Foxconn retail ID so the OOT
+driver auto-binds it at coldplug. (An engineering sample enumerates as
+17cb:0309, already present as //SDX7X.)
+---
+ controllers/mhi_qti.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/controllers/mhi_qti.c
++++ b/controllers/mhi_qti.c
+@@ -1068,6 +1068,7 @@
+ 	{PCI_DEVICE(MHI_PCIE_VENDOR_ID, 0x0308)}, //SDX62
+ 	{PCI_DEVICE(MHI_PCIE_VENDOR_ID, 0x011a)}, //SDX35
+ 	{PCI_DEVICE(MHI_PCIE_VENDOR_ID, 0x0309)}, //SDX7X
++	{PCI_DEVICE(0x105b, 0xe11d)}, //Foxconn T99W640 / Dell DW5934e (retail DF.001)
+ 	{PCI_DEVICE(0x1eac, 0x1001)}, //EM120
+ 	{PCI_DEVICE(0x1eac, 0x1002)}, //EM160
+ 	{PCI_DEVICE(0x1eac, 0x1004)}, //RM520
+--
+2.45.0

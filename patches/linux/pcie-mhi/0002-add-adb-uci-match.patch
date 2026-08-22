@@ -1,0 +1,49 @@
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# Patch to Quectel's out-of-tree pcie_mhi driver, which is GPL-2.0-only
+# (copyright "The Linux Foundation" — Qualcomm's kernel-contribution form).
+# The patched work remains GPL-2.0-only. See README.md for the driver
+# release these apply to and its SHA-256. Apply with `patch -p1`.
+#
+From 0000000000000000000000000000000000000002 Mon Sep 17 00:00:00 2001
+From: Luke Jenkins <lukejenkins@users.noreply.github.com>
+Date: Fri, 17 Apr 2026 00:00:00 +0000
+Subject: [PATCH 2/2] mhi_uci: bind "ADB" channel to UCI chardev
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Second half of the ADB-over-MHI investigation patch series. Adds an
+{ .chan = "ADB", .driver_data = 0x4000 } entry to the OOT pcie_mhi
+driver's mhi_uci_match_table[] in devices/mhi_uci.c. With patch 0001
+in place, the MHI core creates an mhi_dev with chan_name = "ADB"
+when the modem firmware advertises channels 36/37; this entry binds
+the UCI chardev driver to it, exposing /dev/mhi_ADB.
+
+MTU is set to 0x4000 (16 KiB), matching SAHARA and EDL. The actual
+ADB protocol frame size is unknown on this firmware family, but
+16 KiB is safe for any sane framed protocol and easy to revisit
+if testing reveals a different optimum.
+
+Validated on Quectel RM520N-GL-AP (firmware R01A07_11.204.11.204) and
+Foxconn T99W640 / Dell DW5934e (SDX72). Not submitted upstream.
+
+Reference: README.md (ADB-over-MHI findings).
+Signed-off-by: Luke Jenkins <lukejenkins@users.noreply.github.com>
+---
+ devices/mhi_uci.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+--- a/devices/mhi_uci.c	2026-04-17 18:43:50.669906442 +0000
++++ b/devices/mhi_uci.c	2026-04-17 18:43:46.692901419 +0000
+@@ -916,6 +916,8 @@
+ 	{ .chan = "LOOPBACK", .driver_data = 0x1000 },
+ 	{ .chan = "SAHARA", .driver_data = 0x4000 },
+ 	{ .chan = "EDL", .driver_data = 0x4000 },
++	/* Quectel ADB fastboot/runtime channels (36/37) */
++	{ .chan = "ADB", .driver_data = 0x4000 },
+ 	{ .chan = "DIAG", .driver_data = DIAG_MAX_PCIE_PKT_SZ },
+ 	{ .chan = "MBIM", .driver_data = 0x1000 },
+ 	{ .chan = "QMI0", .driver_data = 0x1000 },
+--
+2.45.0

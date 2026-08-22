@@ -1,104 +1,50 @@
 # Root ADB shell — Foxconn T99W640
 
-## Summary
+The T99W640 (SDX72) serves an **unauthenticated root shell** over ADB —
+no AT challenge, USB-composition switch, NV edit, EDL step, or unlock
+key. ADB is exposed as an **MHI channel** (`/dev/mhi_ADB`), not a USB
+endpoint, so access is a host-side procedure: load a driver that
+registers the ADB channel, then bridge the chardev to a TCP socket for
+the `adb` client.
 
-ADB requires no enablement on the modem. `adbd` runs as root in the
-default firmware. There is no AT challenge-response, USB composition
-switch, NV edit, EDL step, or unlock key. ADB is exposed as an MHI
-channel (`/dev/mhi_ADB`), not a USB endpoint. Access is a host-side
-procedure: load a driver that registers the ADB channel, then bridge the
-character device to a TCP socket for the `adb` client.
+The driver mechanics are **not specific to this modem** — the same
+out-of-tree `pcie_mhi` patches, build steps, probe, and bridge cover the
+T99W640 alongside other PCIe/MHI modems. They live at repo level:
 
-## Background
+> **➡ [`/patches/linux/pcie-mhi/`](/patches/linux/pcie-mhi/)** — the
+> patches (incl. `0004`, which adds *this* modem's PCI ID), build/DKMS
+> instructions, findings, and analysis.
+> **➡ [`/tools/mhi-adb/`](/tools/mhi-adb/)** — `mhi_adb_probe.py` (verify)
+> and `mhi_adb_bridge.py` (relay to `adb connect 127.0.0.1:6555`).
 
-- The card is PCIe-only. Default USB composition is
-  `/etc/usb/boot_hsusb_comp = none` (USB disabled at the modem). No USB
-  ADB interface exists.
-- ADB is an MHI channel. The mainline in-tree `mhi_pci_generic` driver
-  does not register the ADB channel in its channel table for this device;
-  only `/dev/wwan0*` (MBIM/AT/DIAG) appear. The Quectel out-of-tree
-  `pcie_mhi.ko` driver registers the ADB channel.
+Follow those for the full apply → verify → use flow. What's below is
+only what's **specific to the T99W640**.
 
-## Requirements
+## T99W640 specifics
 
-- Card installed in a Linux host with a working PCIe-MHI stack (verified
-  on kernels 6.12 and 6.19). Windows hosts cannot reach `/dev/mhi_ADB`.
-- Out-of-tree module build toolchain: `make`, kernel headers for
-  `$(uname -r)`.
-- `adb` client.
-- Root on the host.
-
-## Procedure
-
-### 1. Build the Quectel OOT MHI driver
-
-Source: Quectel `quectel_MHI` / "5G-Modem" (public). The driver targets
-Qualcomm SDX-family silicon; the T99W640 (SDX72) MHI channel layout is
-compatible.
-
-```bash
-# in quectel_MHI/src
-make KVER=$(uname -r)   # produces pcie_mhi.ko
-```
-
-Rebuild against the new `$(uname -r)` if the host kernel changes.
-
-### 2. Swap to the OOT driver
-
-```bash
-sudo rmmod mhi_pci_generic        # removes /dev/wwan0* — see Side effects
-sudo insmod ./pcie_mhi.ko
-ls /dev/mhi_*
-# Expected: mhi_ADB  mhi_BHI  mhi_DIAG  mhi_DUN  mhi_LOOPBACK  mhi_QMI0
-```
-
-`/dev/mhi_ADB` present confirms the channel is registered. No modem-side
-change is required.
-
-### 3. Bridge the ADB chardev to TCP
-
-`adb` uses a socket transport, not a character device. `mhi_adb_bridge.py`
-forwards `/dev/mhi_ADB` to `127.0.0.1:6555`. Two implementation details
-it accounts for:
-
-- Drain-on-open: the OOT ADB channel queues a `CNXN` frame on every
-  open. The first open after a modem boot also carries a stale `CNXN`
-  from the prior session. Two consecutive `CNXN` frames cause `adb` to
-  treat the device as reset and mark it `offline`. The relay discards
-  data queued at open time.
-- Port 6555: on 5555 the adb server's emulator auto-discovery range
-  (5554–5682) claims the bridge as `emulator-5554` and marks the
-  explicit `adb connect` entry offline.
-
-Run detached:
-
-```bash
-setsid python3 mhi_adb_bridge.py < /dev/null > /tmp/mhi_adb_bridge.log 2>&1 &
-```
-
-### 4. Connect
-
-```bash
-adb connect 127.0.0.1:6555
-adb -s 127.0.0.1:6555 shell
-# uid=0(root)  OpenWrt 22.03.5  sdx75/generic  aarch64  kernel 5.15.x
-```
-
-`adb pull` / `adb push` operate against the on-modem filesystem.
-
-## Side effects
-
-- Loading `pcie_mhi.ko` removes `/dev/wwan0mbim0` and `/dev/wwan0at0`.
-  Under the OOT driver:
-  - MBIM/QMI control: `/dev/mhi_QMI0` with `qmicli --device-open-qmi`
-    (native QMI, not tunneled through MBIM; do not pass
-    `--device-open-mbim`).
-  - AT: `/dev/mhi_DUN`.
-- Reversible: `sudo rmmod pcie_mhi && sudo modprobe mhi_pci_generic`
-  restores the in-tree driver and `/dev/wwan0*` devices.
-- The bridge serves one `adb connect` at a time.
-- `/usrdata/local` is non-persistent; data pushed there does not survive
-  reboot. Use `/data` or `/persist` for persistent tooling.
+- **PCIe-only card.** Default USB composition is
+  `/etc/usb/boot_hsusb_comp = none` — USB is disabled at the modem, so
+  no USB ADB interface exists. The MHI/PCIe path is the only route.
+- **The patches are required.** The stock Quectel OOT driver does *not*
+  expose `/dev/mhi_ADB`; patches `0001` + `0002` add the channel. This
+  was confirmed on the T99W640 (the working sessions used the *patched*
+  `pcie_mhi.ko`), matching the RM520N result in
+  [`FINDINGS.md`](/patches/linux/pcie-mhi/FINDINGS.md).
+- **PCI ID.** The retail unit (DF.001) enumerates as **`105b:e11d`**
+  (Foxconn / Dell DW5934e) and needs patch `0004` to bind. An
+  engineering sample enumerates as `17cb:0309` (already in the stock
+  match table).
+- **Control planes under the OOT driver.** QMI is native QMI on
+  `/dev/mhi_QMI0` (`qmicli --device-open-qmi`, *not* `--device-open-mbim`);
+  AT is `/dev/mhi_DUN`.
+- **The root shell.** `adb -s 127.0.0.1:6555 shell id` → `uid=0(root)`;
+  an OpenWrt-based `sdx75/generic aarch64` userspace on a 5.15-series
+  kernel. `adb pull` / `adb push` operate against the on-modem filesystem.
+- **Non-persistent scratch.** `/usrdata/local` does not survive reboot —
+  use `/data` or `/persist` for anything you want to keep.
+- **Reversible.** `sudo rmmod pcie_mhi && sudo modprobe mhi_pci_generic`
+  restores the in-tree driver and the `/dev/wwan0*` nodes. Mind the
+  cold-load-only hazard noted in the patches README before hot-swapping.
 
 ## Filesystem dump
 

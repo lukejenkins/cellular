@@ -1,0 +1,102 @@
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# Patch to Quectel's out-of-tree pcie_mhi driver, which is GPL-2.0-only
+# (copyright "The Linux Foundation" — Qualcomm's kernel-contribution form).
+# The patched work remains GPL-2.0-only. See README.md for the driver
+# release these apply to and its SHA-256. Apply with `patch -p1`.
+#
+From 0000000000000000000000000000000000000003 Mon Sep 17 00:00:00 2001
+From: Luke Jenkins <lukejenkins@users.noreply.github.com>
+Date: Mon, 09 Jun 2026 00:00:00 +0000
+Subject: [PATCH 3/3] port pcie_mhi to kernel 6.8-7.0 removed/changed APIs
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Quectel OOT pcie_mhi V1.3.8 targets up to ~Linux 6.4. Building it
+against a 6.8+/7.x kernel (a 7.0.10 build host) fails on four upstream
+API removals/changes. None touch MHI logic — they are pure kernel-glue
+updates:
+
+  core/mhi_init.c
+    1. no_llseek was removed in 6.12 (commit cb787f4ac0c2, "fs: remove
+       no_llseek"); the slot is now expressed with noop_llseek. The
+       only user here is the mhimon debugfs file_operations.
+    2. bus_type->match() and to_mhi_driver() gained a const
+       device_driver* in 6.11 (commit d69d80484598, "driver core:
+       have match() callback in struct bus_type take a const *").
+       mhi_match()'s signature and the local mhi_driver pointer are
+       made const to follow; the body only reads ->id_table.
+
+  devices/mhi_netdev_quectel.c
+    3. hrtimer_init() + manual ->function assignment was replaced by
+       hrtimer_setup(timer, fn, clock, mode) in 6.15 (commit
+       8f02e3563bb5, "hrtimers: introduce hrtimer_setup()").
+    4. strlcpy() was removed in 6.8 (commit d26270061ae6, "string:
+       remove strlcpy()"); strscpy() is the drop-in replacement for
+       these two NUL-terminated ethtool driver/version copies.
+
+Built clean against 7.0.10+deb13-amd64; pcie_mhi.ko loads and binds
+17cb:0309 (SDX72 / Foxconn T99W640 DW5934e), bringing up the six MHI
+channels incl. /dev/mhi_ADB.
+
+Apply order: this is patch 3 of 3, after 0001 (ADB chan declaration)
+and 0002 (ADB UCI match). It is independent of those hunks (different
+files/regions) but is numbered last by convention.
+
+Reference: README.md (ADB-over-MHI findings).
+Signed-off-by: Luke Jenkins <lukejenkins@users.noreply.github.com>
+---
+ core/mhi_init.c             | 6 +++---
+ devices/mhi_netdev_quectel.c | 7 +++----
+ 2 files changed, 6 insertions(+), 7 deletions(-)
+
+--- a/core/mhi_init.c
++++ b/core/mhi_init.c
+@@ -644,7 +644,7 @@
+ static const struct file_operations mon_fops_text_u = {
+ 	.owner =	THIS_MODULE,
+ 	.open =		mon_text_open,
+-	.llseek =	no_llseek,
++	.llseek =	noop_llseek,
+ 	.read =		mon_text_read_u,
+ 	.release =	mon_text_release,
+ };
+@@ -2372,10 +2372,10 @@
+ }
+
+ /* match dev to drv */
+-static int mhi_match(struct device *dev, struct device_driver *drv)
++static int mhi_match(struct device *dev, const struct device_driver *drv)
+ {
+ 	struct mhi_device *mhi_dev = to_mhi_device(dev);
+-	struct mhi_driver *mhi_drv = to_mhi_driver(drv);
++	const struct mhi_driver *mhi_drv = to_mhi_driver(drv);
+ 	const struct mhi_device_id *id;
+
+ 	/* if controller type there is no client driver associated with it */
+--- a/devices/mhi_netdev_quectel.c
++++ b/devices/mhi_netdev_quectel.c
+@@ -1653,8 +1653,7 @@
+
+ 	priv->agg_skb = NULL;
+ 	priv->agg_count = 0;
+-	hrtimer_init(&priv->agg_hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+-	priv->agg_hrtimer.function = rmnet_vnd_tx_agg_timer_cb;
++	hrtimer_setup(&priv->agg_hrtimer, rmnet_vnd_tx_agg_timer_cb, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+ 	INIT_WORK(&priv->agg_wq, rmnet_vnd_tx_agg_work);
+ 	ktime_get_ts64(&priv->agg_time);
+ 	spin_lock_init(&priv->agg_lock);
+@@ -2590,8 +2589,8 @@
+ {
+ 	//struct mhi_netdev *mhi_netdev = ndev_to_mhi(ndev);
+
+-	strlcpy (info->driver, "pcie_mhi", sizeof info->driver);
+-	strlcpy (info->version, PCIE_MHI_DRIVER_VERSION, sizeof info->version);
++	strscpy (info->driver, "pcie_mhi", sizeof info->driver);
++	strscpy (info->version, PCIE_MHI_DRIVER_VERSION, sizeof info->version);
+ }
+
+ static const struct ethtool_ops mhi_netdev_ethtool_ops = {
+--
+2.45.0

@@ -1,0 +1,53 @@
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# Patch to Quectel's out-of-tree pcie_mhi driver, which is GPL-2.0-only
+# (copyright "The Linux Foundation" — Qualcomm's kernel-contribution form).
+# The patched work remains GPL-2.0-only. See README.md for the driver
+# release these apply to and its SHA-256. Apply with `patch -p1`.
+#
+From 0000000000000000000000000000000000000001 Mon Sep 17 00:00:00 2001
+From: Luke Jenkins <lukejenkins@users.noreply.github.com>
+Date: Fri, 17 Apr 2026 00:00:00 +0000
+Subject: [PATCH 1/2] mhi_init: declare "ADB" channel (36/37) in chan_cfg[]
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Quectel out-of-tree pcie_mhi v1.3.6 defines MHI_CLIENT_ADB_FB_OUT
+(36) and MHI_CLIENT_ADB_FB_IN (37) in core/mhi.h, but those constants
+are not referenced anywhere in chan_cfg[]. Without an entry in
+chan_cfg[], the MHI core never assigns chan_name = "ADB" to any
+mhi_dev, so the matching UCI table entry that ships in patch 0002
+would never fire and /dev/mhi_ADB would never appear.
+
+This first half of the two-patch series adds the missing declaration
+so the MHI core can name and bring up channels 36/37 when the modem
+firmware advertises them. Whether the firmware actually advertises
+those channels — and whether they carry runtime adbd traffic vs only
+fastboot-mode ADB — is the empirical question; this patch makes the
+experiment possible.
+
+Validated on Quectel RM520N-GL-AP (firmware R01A07_11.204.11.204) and
+Foxconn T99W640 / Dell DW5934e (SDX72). Not submitted upstream
+(Quectel does not accept community patches to this OOT driver).
+
+Reference: README.md (ADB-over-MHI findings).
+Signed-off-by: Luke Jenkins <lukejenkins@users.noreply.github.com>
+---
+ core/mhi_init.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+--- a/core/mhi_init.c	2026-04-17 18:37:47.115446508 +0000
++++ b/core/mhi_init.c	2026-04-17 18:37:42.618440806 +0000
+@@ -1810,6 +1810,9 @@
+ //"Qualcomm EDL "
+ 	{"EDL", MHI_CLIENT_EDL_OUT, NUM_MHI_CHAN_RING_ELEMENTS},
+ 	{"EDL", MHI_CLIENT_EDL_IN, NUM_MHI_CHAN_RING_ELEMENTS},
++//"Qualcomm PCIe ADB (channels 36/37, MHI_CLIENT_ADB_FB_*)"
++	{"ADB", MHI_CLIENT_ADB_FB_OUT, NUM_MHI_CHAN_RING_ELEMENTS},
++	{"ADB", MHI_CLIENT_ADB_FB_IN, NUM_MHI_CHAN_RING_ELEMENTS},
+ #ifdef ENABLE_IP_SW0
+ //"Qualcomm PCIe LOCAL Adapter"
+ 	{"IP_SW0", MHI_CLIENT_IP_SW_0_OUT, NUM_MHI_SW_IP_RING_ELEMENTS},
+--
+2.45.0
