@@ -77,6 +77,34 @@ Firmware updates for the retail Tri Cascade VOS dongle are distributed as
 Android-recovery-style OTA packages and a Windows MBIM firmware-update
 bundle carrying Qualcomm's `QCMBFWUpdateDriver`.
 
+## Recovery: forcing EDL (Emergency Download) mode
+
+Like other Qualcomm modules, the RXM-G1 can be forced into **EDL / Emergency
+Download mode** — the primary-bootloader Sahara mode (USB `05c6:9008`) used for
+low-level recovery flashing when the module won't boot normally. On a running
+unit you can reach it from software, but the hardware method below is what you
+need when the module is bricked and won't enumerate.
+
+**EDL test point identified by stitch86.**
+
+![RXM-G1 EDL test point — back of board, two pads to bridge](hardware/edl-test-point.jpg)
+
+On the **back** of the board (silkscreen `ZX56 GA-597 Rev:1.0`, near the
+`COMPEQ … 94V-0` and `TI` PMIC markings) there is a **column of test pads along
+the left edge**. The **`EDL`** point is one pad in that column; the annotation
+arcs from it to the **small nearby pad at its lower-right**. **Short those two
+pads together while applying power** and the SDX55 drops into EDL instead of
+booting normally. Bridge only those two pads.
+
+This is a **board-level** point, so it applies equally to the module's rebrands
+that use the same board (Tri Cascade SG500M2-X / VOS dongle — see
+[Rebrands](#rebrands)).
+
+Once in EDL, the SDX55 accepts the **generic Qualcomm SDX55 firehose
+programmer** (the same reference loader shipped with other SDX55 modules — not a
+Compal-specific re-sign), which chains to the standard Qualcomm OEM root. Always
+read back / probe partitions before writing anything.
+
 ## C-V2X capability
 
 The SDX55 silicon and every RXM-G1 firmware build inspected so far carry
