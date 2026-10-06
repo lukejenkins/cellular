@@ -28,6 +28,8 @@ Two more pieces make those work — and stand on their own:
 
 Each tool does one thing well and is useful on its own — capture without decode, decode without capture, transport without either. Take just the part you need, or build on any single piece. They're small and permissively licensed on purpose: easy to share, easy to build on.
 
+New to DIAG captures? The [DIAG encapsulations and oracles guide](diag-encapsulations-and-oracles.md) explains the formats these tools handle, layer by layer, and what to check when a capture won't decode.
+
 ---
 
 ## Guides & how-tos
@@ -76,7 +78,7 @@ Per-module notes: identity, AT commands, firmware captures, and quirks.
 
 ### Orbic
 
-- [Orbic RC400L](/orbic/rc400l/) — LTE Cat 4 MiFi hotspot (Qualcomm MDM9207). QMI LOC GNSS driver for stripped MDM9207 devices.
+- [Orbic RC400L](/orbic/rc400l/) — LTE Cat 4 mobile hotspot (Qualcomm MDM9207). QMI LOC GNSS driver for stripped MDM9207 devices.
   - [QMI LOC GNSS Driver](/orbic/rc400l/gnss-driver/QMI-LOC-GNSS-Driver.md)
   - [Build Instructions](/orbic/rc400l/gnss-driver/BUILD.md)
   - [References](/orbic/rc400l/gnss-driver/REFERENCES.md)
@@ -105,6 +107,7 @@ Per-module notes: identity, AT commands, firmware captures, and quirks.
 
 ## References
 
+- [Qualcomm DIAG: Encapsulations, Compression Formats and Decode Oracles](diag-encapsulations-and-oracles.md) — Field guide to reading DIAG captures layer by layer: transports, file containers, opcodes and the `0x98` wrapper, QShrink-compressed debug prints and the `qdsp6m.qdb` database, versioned log payloads, a chipset-generation matrix, a catalogue of decode oracles, and a "this frame won't decode" triage checklist.
 - [Cellular Modem Scan Commands Reference](cell-scan-commands.md) — Cross-vendor comparison of AT commands that return cell tower observations. Covers Fibocom, Quectel, Sierra Wireless, SIMCom, and Telit modems with data field matrices, WiGLE submission compatibility, and scan strategy recommendations.
 
 ### Elsewhere
