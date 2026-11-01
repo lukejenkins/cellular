@@ -18,17 +18,41 @@ Getting usable data out of a modem's diagnostic interface is a short pipeline. T
                                                                           → your analysis
 ```
 
-- **[`diaggulp`](https://github.com/lukejenkins/diaggulp) — capture.** The program you actually run. Point it at a connected modem (over USB or the network) and it records the raw diagnostic log stream to a file. Most people start here.
-- **[`diaggrok`](https://github.com/lukejenkins/diaggrok) — decode.** The star of the show. It takes those raw log bytes and hands back named, typed fields — turning cryptic log codes and opaque payloads into readable data: **signal strength**, serving and neighbor cells, GNSS fixes, LTE/5G measurements. It won't guess: a record whose byte layout it hasn't actually reverse-engineered and verified is **left undecoded**, never filled in with plausible-looking but wrong values.
+All five tools shipped a coordinated release, **`v2026.10.31`**, and each one pins its siblings at that same tag:
 
-Two more pieces make those work — and stand on their own:
+| Tool | Job | Latest release | Written in |
+|---|---|---|---|
+| [`diaggulp`](https://github.com/lukejenkins/diaggulp) | capture | [`v2026.10.31`](https://github.com/lukejenkins/diaggulp/releases/tag/v2026.10.31) | Python |
+| [`diaggrok`](https://github.com/lukejenkins/diaggrok) | decode — 196 log-code parsers | [`v2026.10.31`](https://github.com/lukejenkins/diaggrok/releases/tag/v2026.10.31) | Python, zero dependencies |
+| [`diagmunge`](https://github.com/lukejenkins/diagmunge) | transport + capture formats | [`v2026.10.31`](https://github.com/lukejenkins/diagmunge/releases/tag/v2026.10.31) | Python |
+| [`diaggpsd`](https://github.com/lukejenkins/diaggpsd) | live GNSS → gpsd / RINEX | [`v2026.10.31`](https://github.com/lukejenkins/diaggpsd/releases/tag/v2026.10.31) | Python |
+| [`diagbarf`](https://github.com/lukejenkins/diagbarf) | on-device DIAG egress | [`v2026.10.31`](https://github.com/lukejenkins/diagbarf/releases/tag/v2026.10.31) | C (static) |
 
-- **[`diagmunge`](https://github.com/lukejenkins/diagmunge) — transport + formats.** The shared core the other tools lean on: moving diagnostic frames over serial/USB/TCP/UDP and converting between capture formats. Useful by itself if you're building your own pipeline.
-- **[`diagbarf`](https://github.com/lukejenkins/diagbarf) — optional on-device egress.** A small helper for the minority of setups where you can't reach the modem's diagnostic port from your host. Most people never need it; it feeds the same pipeline.
+- **[`diaggulp`](https://github.com/lukejenkins/diaggulp) — capture.** The program you actually run. Point it at a connected modem (over USB serial, TCP, or UDP) and it records the raw diagnostic log stream to a file, using very little host CPU. Most people start here. *Latest:* `--pcap` replay works again. New opt-in flags disarm logging on exit, so the modem doesn't keep streaming after you stop. Rotating captures give each segment its own time anchor, and `--wait-ready` waits for a modem that re-enumerates on USB.
+- **[`diaggrok`](https://github.com/lukejenkins/diaggrok) — decode.** The star of the show. It takes those raw log bytes and hands back named, typed fields — turning cryptic log codes and opaque payloads into readable data: **signal strength**, serving and neighbor cells, GNSS fixes, LTE/5G measurements. It now covers **196 log codes** across GNSS, LTE, 5G NR, 2G/3G, IMS, and SIM, validated on chipsets from the MDM9x07 generation through SDX72. It is pure Python with no dependencies. It won't guess: a record whose byte layout it hasn't actually reverse-engineered and verified is **left undecoded**, never filled in with plausible-looking but wrong values. *Latest:* five new parsers (GNSS session events, position reports, measurement-engine time estimates, BeiDou B1I measurements, LTE intra-frequency reselection). `ts64_cal` is new: it maps the modem's DIAG clock to UTC using the GNSS fixes in the same capture.
+
+Three more pieces make those work — and stand on their own:
+
+- **[`diagmunge`](https://github.com/lukejenkins/diagmunge) — transport + formats.** The shared core the other tools lean on: moving diagnostic frames over serial/USB/TCP/UDP and converting between capture formats (HDLC ↔ DLF ↔ JSONL ↔ pcap). Useful by itself if you're building your own pipeline. *Latest:* reads DIAG records straight from pcap/pcapng captures. An opt-in **read-only guard** refuses write-class requests before a byte reaches the modem. pcap exports now get GNSS-calibrated timestamps.
+- **[`diaggpsd`](https://github.com/lukejenkins/diaggpsd) — live GNSS.** Decodes a modem's GNSS DIAG records and serves them as a gpsd-compatible feed on TCP 2947 (so `cgps`, `gpspipe`, JOSM, and anything built on `libgps` just work), as raw JSON, or as RINEX for post-processing. Works on modems that expose no NMEA port or kernel GPS driver. *Latest:* setup requires explicit DIAG/AT ports instead of guessing them. A new profile covers the Quectel EP06-A / EM06-A.
+- **[`diagbarf`](https://github.com/lukejenkins/diagbarf) — optional on-device egress.** A small static C daemon for the minority of setups where you can't reach the modem's diagnostic port from your host: it runs on the modem's own processor and fans the DIAG stream out to TCP/UDP sinks on the network. It has been validated on Wistron, Casa Systems, Fibocom, Inseego, and Quectel hardware, including devices with no `/dev/diag`. Most people never need it; it feeds the same pipeline. *Latest:* non-blocking UDP sinks and a `--stall-watchdog` for supervisors like systemd. It disarms the modem on stop by default, and can also arm the DIAG event plane.
 
 Each tool does one thing well and is useful on its own — capture without decode, decode without capture, transport without either. Take just the part you need, or build on any single piece. They're small and permissively licensed on purpose: easy to share, easy to build on.
 
+None of them are on PyPI. Install from GitHub **at a release tag**, e.g. `pip install "diaggulp @ git+https://github.com/lukejenkins/diaggulp@v2026.10.31"`. Don't use `@main`, because the tools pin each other by tag; each repo's README has the details and extras.
+
 New to DIAG captures? The [DIAG encapsulations and oracles guide](diag-encapsulations-and-oracles.md) explains the formats these tools handle, layer by layer, and what to check when a capture won't decode.
+
+### Companion tool: `qfenix`
+
+[`qfenix`](https://github.com/lukejenkins/qfenix) is a fork of [iamromulan/qfenix](https://github.com/iamromulan/qfenix), itself an enhanced [linux-msm/qdl](https://github.com/linux-msm/qdl). It is a single-binary Swiss Army knife for Qualcomm modems: EDL/Firehose flashing, NV items, EFS browsing and backup, GPT partitions, and an AT console. The latest release, [`v2.5.10-qfenix-0.2.0`](https://github.com/lukejenkins/qfenix/releases/tag/v2.5.10-qfenix-0.2.0), adds:
+
+- a wxWidgets GUI and raw sector read/write
+- PCIe/MHI modem discovery on Linux
+- more robust DIAG/EFS handling, including `--no-offline` for read-only EFS access without taking the modem offline
+- MIPS support and statically linked Windows builds
+
+qfenix is BSD-3-Clause licensed, separately from the `diag*` tools.
 
 ---
 
