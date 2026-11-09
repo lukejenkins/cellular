@@ -43,6 +43,8 @@ Install the Python tools from PyPI, e.g. `pip install "diaggulp[serial]" diaggps
 
 New to DIAG captures? The [DIAG encapsulations and oracles guide](diag-encapsulations-and-oracles.md) explains the formats these tools handle, layer by layer, and what to check when a capture won't decode.
 
+Wondering what hardware to use? The [tested hardware list](TESTED_HARDWARE.md) names the devices confirmed useful for diag* work and the firmware versions tested on each.
+
 ### Companion tool: `qfenix`
 
 [`qfenix`](https://github.com/lukejenkins/qfenix) is a fork of [iamromulan/qfenix](https://github.com/iamromulan/qfenix), itself an enhanced [linux-msm/qdl](https://github.com/linux-msm/qdl). It is a single-binary Swiss Army knife for Qualcomm modems: EDL/Firehose flashing, NV items, EFS browsing and backup, GPT partitions, and an AT console. The latest release, [`v2.5.10-qfenix-0.2.0`](https://github.com/lukejenkins/qfenix/releases/tag/v2.5.10-qfenix-0.2.0), adds:
@@ -131,6 +133,7 @@ Per-module notes: identity, AT commands, firmware captures, and quirks.
 
 ## References
 
+- [Tested hardware](TESTED_HARDWARE.md) — Devices confirmed useful for diag* work (modules, hotspots, and gateways from MDM9200 through SDX72), with the firmware versions tested on each.
 - [Qualcomm DIAG: Encapsulations, Compression Formats and Decode Oracles](diag-encapsulations-and-oracles.md) — Field guide to reading DIAG captures layer by layer: transports, file containers, opcodes and the `0x98` wrapper, QShrink-compressed debug prints and the `qdsp6m.qdb` database, versioned log payloads, a chipset-generation matrix, a catalogue of decode oracles, and a "this frame won't decode" triage checklist.
 - [Cellular Modem Scan Commands Reference](cell-scan-commands.md) — Cross-vendor comparison of AT commands that return cell tower observations. Covers Fibocom, Quectel, Sierra Wireless, SIMCom, and Telit modems with data field matrices, WiGLE submission compatibility, and scan strategy recommendations.
 
