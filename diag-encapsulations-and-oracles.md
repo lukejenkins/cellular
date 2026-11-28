@@ -1,6 +1,6 @@
 # Qualcomm DIAG: encapsulations, compression formats and decode oracles
 
-> **Version 1.0 — 2026-10-06**
+> **Version 1.1 — 2026-11-27**
 >
 > Copyright © 2026 Luke Jenkins. Licensed under
 > [CC-BY-SA-4.0](https://creativecommons.org/licenses/by-sa/4.0/) (full text in
@@ -84,6 +84,10 @@ Two rules save the most time:
 - **Unwrap `0x98` every time.** Whether a modem wraps its log records depends on
   its internal routing path, not on its chipset generation (§5.2).
 
+Byte-layout diagrams for the frame, the capture-file containers and each
+opcode envelope described below are in [`diag-framing/`](diag-framing/README.md). The sections
+that follow link the one that applies.
+
 ---
 
 ## 2. Open-source tools from this effort
@@ -119,6 +123,8 @@ in enough detail to implement from scratch.
 - **Framing:** take the payload, append a little-endian CRC-16, escape
   `7E → 7D 5E` and `7D → 7D 5D`, then end with a `7E`. Frames usually do **not**
   begin with a `7E`, so a raw capture often opens directly on `10 00 …`.
+  Diagrams: [the byte stream](diag-framing/diag_hdlc_stream.svg) and
+  [one deframed frame](diag-framing/diag_hdlc_frame.svg).
 - **CRC:** reflected polynomial `0x8408`, initial value `0xFFFF`, final XOR
   `0xFFFF` (catalogued as CRC-16/X-25). Known answer:
   `crc("123456789") == 0x906E`. "CRC-16-CCITT" names several incompatible
@@ -230,6 +236,9 @@ a vendor fork of it).
 | pcap/pcapng of a UDP relay | link layer + UDP + relay header + HDLC chunk | yes, if the relay forwarded it | `tcpdump` on the relay port; read with diaggulp `--transport pcap` |
 | ISF / HDF / `.mi2log` | vendor and MobileInsight formats | — | not covered here |
 
+Diagrams: [raw HDLC stream](diag-framing/diag_hdlc_stream.svg),
+[flat DLF](diag-framing/diag_dlf_file.svg), [QMDL2](diag-framing/diag_qmdl2_file.svg).
+
 **Telling them apart by content.** diaggrok's `dlf.detect_format` returns one of
 `dlf`, `hdlc`, `qmdl2-v2`, `pcap` or `unknown`, using these tests:
 
@@ -281,6 +290,16 @@ After deframing (unescape, check and strip the CRC), byte 0 is the opcode.
 | `0x13` | `BAD_CMD_F` | refusal; the body echoes the refused request | no |
 | `0x73`, `0x7D` | log mask, F3 mask | requests and responses look alike; only context tells them apart | no |
 
+Diagrams for the frames in this table:
+[`0x10`](diag-framing/diag_log_f.svg), [`0x98`](diag-framing/diag_multi_radio_0x98.svg),
+[`0x79`](diag-framing/diag_ext_msg_0x79.svg), [`0x92`](diag-framing/diag_qsr_terse_0x92.svg),
+[`0x99`](diag-framing/diag_qsr4_terse_0x99.svg), [`0x9D`](diag-framing/diag_qsh_trace_0x9d.svg),
+[`0x60`](diag-framing/diag_event_report_0x60.svg), [`0x80`](diag-framing/diag_subsys_v2_0x80.svg),
+[`0x9E`](diag-framing/diag_secure_log_0x9e.svg), [`0x00`](diag-framing/diag_verno_0x00.svg),
+[`0x1C`](diag-framing/diag_ver_0x1c.svg), [`0x1D`](diag-framing/diag_ts_0x1d.svg),
+[`0x7C`](diag-framing/diag_ext_build_id_0x7c.svg), [`0x13`](diag-framing/diag_bad_cmd_0x13.svg),
+[`0x73`](diag-framing/diag_log_config_0x73.svg), [`0x7D`](diag-framing/diag_ext_msg_config_0x7d.svg).
+
 > `0x9C DIAG_MSG_SMALL_F` appears in vendor headers but has **never** been seen
 > as a CRC-valid frame; the one apparent hit was the tail of a truncated `0x9E`.
 
@@ -302,6 +321,8 @@ shifts the offsets after it.
 98 | u8 radio_id | 2 B pad | u32 tx_mask | inner frame (opcode first, no CRC of its own)
 ```
 
+Diagram: [`diag_multi_radio_0x98.svg`](diag-framing/diag_multi_radio_0x98.svg).
+
 The outer CRC covers everything. The inner frame is a complete DIAG frame;
 the inner opcodes seen in practice are `0x10`, `0x79`, `0x99` and `0x9D`.
 diaggrok's HDLC walker unwraps it automatically (`hdlc.iter_log_records`).
@@ -312,7 +333,7 @@ family (depends on what was logged, so indicative):
 | Family | Wrapped share of log records |
 |---|---|
 | MDM9x07, MDM9x30/35, MDM9600, MDM9250, MDM9150 | **0%** — never seen |
-| MDM9640, SDX50M, SDX12, MDM9x50 (Sierra Wireless) | under 1% |
+| MDM9640, SDX12, MDM9x50 (Sierra Wireless SWI9X50C: MC7411 MDM9250, EM75xx) | under 1% |
 | SDX20 | ~2–5% typical (one outlier at 38%) |
 | SDX24 | 7–59% |
 | SDX55 | 15–95% (median ~32%) |
@@ -347,6 +368,8 @@ On firmware from the QShrink 4 era (SDX20 onward), `0x80` subsystem `0x12`
 | 2 | READ | handle, `u32` offset, `u16` length, data (the request lists length before offset) |
 | 3 | CLOSE | — |
 
+Diagram of one READ chunk: [`diag_subsys_v2_0x80.svg`](diag-framing/diag_subsys_v2_0x80.svg).
+
 The message counter's bit 15 is a *more data follows* flag, so the final chunk
 legitimately breaks the "+1" sequence. Byte 8 is sometimes `0x10`, which tempts
 readers to unwrap it like `0x98`; doing so produces a plausible log code over
@@ -365,6 +388,8 @@ decode" figure — they are not telemetry.
 [1] version  [2] type flags  [12:16] u32 monotonic sequence  [24:] body
 body: [0:4] nonce  [5] vendor tag  [6:8] per-build tag  [8:] ciphertext (~8.0 bits/byte)
 ```
+
+Diagram: [`diag_secure_log_0x9e.svg`](diag-framing/diag_secure_log_0x9e.svg).
 
 Seen on SDX62, SDX65 and SDX72 modules from Quectel, Sierra Wireless and Foxconn. The
 header decodes (diaggrok: `hdlc.parse_secure_log_envelope`); the body is
@@ -419,6 +444,8 @@ SDX6x part runs to tens of megabytes a minute.
 [12:14] line  [14:16] ss_id  [16:20] ss_mask  [20:] num_args × u32, fmt\0, file\0
 ```
 
+Diagram: [`diag_ext_msg_0x79.svg`](diag-framing/diag_ext_msg_0x79.svg).
+
 Works on any build with no outside data. A build can emit `0x79` and `0x99`
 side by side, so a tool that renders only `0x79` makes a mixed build look
 plain-text-only.
@@ -429,6 +456,8 @@ plain-text-only.
 [0] 0x92  [1] 0x00  [2:4] num_args  [4] chipset marker  [5:12] u56 ts (= u64 >> 8)
 [12:14] line  [14:16] ss_id  [16:20] ss_mask  [20:24] hash  [24:] num_args × u32
 ```
+
+Diagram: [`diag_qsr_terse_0x92.svg`](diag-framing/diag_qsr_terse_0x92.svg).
 
 The frame length is always `24 + 4·num_args`. (One public description puts a
 `u64` timestamp at `[4:12]`; measurement shows a marker byte at `[4]` and a
@@ -449,6 +478,8 @@ QShrink 4 database.
 [0] 0x99  [1] ts_type  [2] num_size_args (low nibble = count, high = width)
 [3] drop_cnt  [4:12] u64 ts  [12:16] u32 token  [16:18] u16 (unknown)  [18:] args
 ```
+
+Diagram: [`diag_qsr4_terse_0x99.svg`](diag-framing/diag_qsr4_terse_0x99.svg).
 
 The frame checks itself: `len(args) == count × width`. Line, subsystem and
 filename are not on the wire — they come from the database row.
@@ -476,6 +507,8 @@ filename are not on the wire — they come from the database row.
 [4:6] —  [6:8] client handle  [8:12] u32 ts  [12:16] u32 token  [16:] u32 args
 ```
 
+Diagram: [`diag_qsh_trace_0x9d.svg`](diag-framing/diag_qsh_trace_0x9d.svg).
+
 The same token scheme as `0x99`, resolved against the **Qtrace** section of the
 same `qdsp6m.qdb` — there is no separate QSH database. It has to be switched on
 (subsys `0x44` cmd `0x9001`, with subsystems in ascending order); MDM9607-class
@@ -496,6 +529,8 @@ one, check its CRC first.
 id_raw: bit 15 = short timestamp, bits 14:13 = payload size (0/1/2 B inline,
         3 = u8 length prefix), bits 12:0 = event id
 ```
+
+Diagram: [`diag_event_report_0x60.svg`](diag-framing/diag_event_report_0x60.svg).
 
 Bit 15 is not part of the id: `0x6C84` and `0xEC84` are both event 3204. The
 stream is switched on with the two bytes `60 01`. Event **names** come from
@@ -571,6 +606,8 @@ layouts** — not extensions of one layout. A parser that insists on one version
 "fails" on most modern firmware, and loosening the check is *worse*: it decodes
 garbage. The fix is to dispatch on the version.
 
+Diagram of the `0x10` frame that carries every log record: [`diag_log_f.svg`](diag-framing/diag_log_f.svg).
+
 Three worked examples; diaggrok's parsers for each (`diag_0xb114.py`,
 `diag_0xb063.py`, `diag_0xb064.py`) document every version's layout in their
 docstrings:
@@ -579,7 +616,7 @@ docstrings:
 |---|---|---|
 | `0xB114` LTE LL1 serving-cell frame timing | `0x01` (MDM9x07/9x15), `0x2B` (MDM9x30/35), `0x65` (MDM9250), `0x7A` (SDX20), `0x8D` (SDX24), `0xA1` (SDX55+) | 12- or 16-byte header; record size 3, 28, 44, 8, 48 or 48 bytes; `0xA1` moves the frame/subframe number into every record. Across all our captures only about 5% of records are version `0x01`. |
 | `0xB063` LTE MAC downlink transport block | `0x01` (MDM9x00–SDX24), `0x31` (SDX55), `0x32` (SDX55/SDX6x) | `0x01` is the classic MAC subpacket container (subpacket id `0x07`); `0x31` and `0x32` are a flat list of transport-block entries, and `0x31` puts a 532-byte cell-statistics block in front of the entries. |
-| `0xB064` LTE MAC uplink transport block | `0x01` only (subpacket versions 1/2/3 inside) | subpacket id `0x08`, in the same container as `0xB063` version `0x01`. |
+| `0xB064` LTE MAC uplink transport block | `0x01` only (subpacket versions 1/2/3/5/7/8 inside; 5 and 8 reuse the version-3 sample, 7 (SDX72) has a 1-byte prefix) | subpacket id `0x08`, in the same container as `0xB063` version `0x01`. |
 
 The `0xB061`–`0xB064` MAC family shares an outer container,
 `u8 version | u8 num_subpackets | 2 B | subpackets`, each subpacket starting
@@ -624,7 +661,7 @@ a family.
 |---|---|---|---|---|---|---|---|---|---|
 | MDM9x07 (9207/9607) | Quectel EG25-G, EG95; SIMCom SIM7600; Orbic RC400L | — | ✓ | ✓ | — | — | — | refuses | ✓ |
 | MDM9x30/35/40 | Sierra Wireless EM7455/MC7455, AC791L; Quectel EP06 | rare | ✓ | ✓ | — | — | — | — | ✓ |
-| MDM9x50 / SDX20 | Sierra Wireless EM7565/EM7511/MC7411; Telit LM960; Quectel EG12/EG18 | ✓ (layer 2 only) | ✓ | — | ✓ | — | — | — | ✓ |
+| MDM9250 (X16) / SDX20 (X20) | Sierra Wireless EM7565/EM7511/MC7411 (MDM9250); Telit LM960, Quectel EG12/EG18 (SDX20) | ✓ (layer 2 only) | ✓ | — | ✓ | — | — | — | ✓ |
 | MDM9150 / MDM9250 (automotive, C-V2X) | WNC and Kapsch units | MDM9150 partly | ✓ | — | ✓ | — | — | — | rare |
 | SDX24 | Quectel EM120R/EM160R | ✓ | ✓ | — | ✓ | ✓ | — | ✓ | ✓ |
 | SDX55 | Quectel RM500Q; Sierra Wireless EM9190; Telit FN980; Foxconn T99W175; Inseego M2000/M2100 | ✓ | ✓ | — | ✓ | ✓ | — | ✓ | ✓ |
@@ -681,7 +718,7 @@ Apache-2.0), compare outputs rather than reading or porting their source.
 | [MobileInsight](https://github.com/mobile-insight/mobileinsight-core) | Python analyzers, ~117 codes | broad LTE/NR coverage | involved build; not on PyPI | from source |
 | [uecapabilityparser](https://github.com/handymenny/uecapabilityparser) (MIT) | UE-capability and carrier-aggregation combination tables (the engine behind smartphonecombo.it) | OTA `UECapabilityInformation` hex from `0xB0C0`/`0xB821` (`-t H`) | its capture-file modes depend on SCAT's pcap output | GitHub releases (needs Java) |
 | [Quectel QLog](https://github.com/quectel-official/QLog) | vendor capture plus QShrink 4 rendering | Quectel modems, live | needs the modem attached; licence restricted to Quectel customers | GitHub |
-| [diagmunge](https://github.com/lukejenkins/diagmunge) `dlf_to_pcap` (Apache-2.0) | DIAG → GSMTAP pcap, with NR signalling as Wireshark Exported-PDU | an independently written second pcap to diff against QCSuper's; NR RRC that stock Wireshark dissects | signalling codes only | `pip install "diagmunge[munge] @ git+https://github.com/lukejenkins/diagmunge@main"` |
+| [diagmunge](https://github.com/lukejenkins/diagmunge) `dlf_to_pcap` (Apache-2.0) | DIAG → GSMTAP pcap, with NR signalling as Wireshark Exported-PDU | an independently written second pcap to diff against QCSuper's; NR RRC that stock Wireshark dissects | signalling codes only | `pip install "diagmunge[munge]"` |
 | [osmo-qcdiag](https://gitea.osmocom.org/phone-side/osmo-qcdiag), [diag-parser](https://github.com/moiji-mobile/diag-parser), [SnoopSnitch](https://github.com/srlabs/snoopsnitch), [libqcdm](https://gitlab.freedesktop.org/mobile-broadband/ModemManager) | older community decoders and constant tables | 2G/3G, the command plane | little LTE/NR field coverage | upstream repositories |
 
 ### 10.3 Truth already inside the capture

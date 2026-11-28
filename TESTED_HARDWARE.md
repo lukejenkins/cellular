@@ -10,7 +10,9 @@ Devices we have confirmed useful for diag* work, and the firmware versions we ha
 | Compal | RXM-G1 | SDX55 | `RXMG1.20.00.244_0C03` |
 | Fibocom | FM101-GL | SDX12 | `19500.0000.00.01.01.52` |
 | Fibocom | NL668-AM | MDM9607 | `19006.1000.00.02.79.62_GC` |
+| Foxconn | FSNO21VA (Verizon Internet Gateway - Business) | SDX62 | `3.2.0.10` |
 | Foxconn | T77W595 (HP lt4120) | MDM9625 | `T77W595.F0.0.0.6.5.VZ.017` |
+| Foxconn | T77W676 (HP 917816-001) | MDM9240 | `T77W676.F0.0.0.4.7.DO.017` |
 | Foxconn | T77W968 (Dell DW5821e) | SDX20 | `T77W968.F1.0.0.3.5.GC.009` |
 | Foxconn | T99W175 | SDX55 | `T99W175.F0.0.0.5.1.CU.002`<br>`T99W175.F0.0.0.5.1.GC.003`<br>`T99W175.F0.1.0.0.9.GC.004`<br>`T99W175.F0.1.0.0.9.TO.006`<br>`T99W175.F0.1.0.0.9.VZ.009` |
 | Foxconn | T99W373 (Dell DW5932e) | SDX62 | `FDE.F0.3.0.1.1.TO.001` |
@@ -19,17 +21,20 @@ Devices we have confirmed useful for diag* work, and the firmware versions we ha
 | GL.iNet | Mudi 7 (Quectel RG650V-NA inside) | SDX72 | `RG650VNA01ACR02A04G8G`<br>`RG650VNA01ACR02A04G8G_01.005.01.005` |
 | Inseego | FX2000 | SDX55 | `MiFiOS2-2.382.1.5` |
 | Inseego | FX3100 | SDX62 | `THN-3.25.1.1_App-2.613.1.9`<br>`THN-3.25.1.1_App-2.613.1.10` |
+| Inseego | FX4200 | SDX72 | `HLA-2.27.1_App-1.079.6` |
 | Inseego | M1000 | SM8150 + SDX50M | `SM8150PER-SDX50M_1.18.20_SM8150_1.18.20_Linux_1.18.22` |
 | Inseego | M2000 | SDX55 | `MiFiOS2-2.302.1.24` |
 | Inseego | M2100 | SDX55 | `MiFiOS2-2.279.1.9`<br>`MiFiOS2-2.302.1.24` |
 | Inseego | M3100 | SDX65 | `THN-1.54_App-2.609` |
 | Inseego | MiFi 6620L | MDM9625 | `L1.152.8.1.2_M9x25BEN-2.24.2` |
+| Inseego | MiFi 8000 | SDX20 | `MiFiOS-2.114.8` |
+| Inseego | MiFi 8800L | SDX20 | `MiFiOS-2.100.29` |
 | Inseego | Skyus 500V | SDX20 | `SDx20WID-1.22.4.1` |
 | MikroTik | R11e-LTE-US | MDM9207 | `R11eL_v05.03.183961`<br>`R11eL_v05.04.193841` |
 | Moxee | K779HSDL | MDM9607 | `K779HSDL_2.00.03A_EQ100` |
 | Netgear | AirCard 791L | MDM9x35 | `NTG9X35C_02.08.59.00` |
 | Orbic | R500L5 | SDX55 | `ORB500L5_V2.0.3.9_BVZRT`<br>`ORB500L5_V2.0.4.3_BVZRT` |
-| Orbic | R562L5 | SDX62 | `R562L5_v1.0.90_BVZ` |
+| Orbic | R562L5 | SDX62 | `R562L5_v1.0.85_BVZ`<br>`R562L5_v1.0.90_BVZ` |
 | Orbic | RC400L | MDM9207 | `MDM9607.LE.2.0-00193-STD.PROD-1` |
 | Quectel | BG95-M1 | MDM9205 | `BG95M1LAR02A04_01.006.01.006` |
 | Quectel | EG12-GT | SDX20 | `EG12GTPAR01A13M4G`<br>`EG12GTPAR01A14M4G` |
@@ -43,6 +48,7 @@ Devices we have confirmed useful for diag* work, and the firmware versions we ha
 | Quectel | EP06-A | MDM9240 | `EP06ALAR02A08M4G_01.009.01.009` |
 | Quectel | RM500Q-AE | SDX55 | `RM500QAEAAR11A03M4G_01.200.01.200` |
 | Quectel | RM520N-GL | SDX62 | `RM520NGLAAR01A05M4G`<br>`RM520NGLAAR01A08M4G`<br>`RM520NGLAAR03A03M4G`<br>`RM520NGLAAR03A04M4G`<br>`RM520NGLAAR03A04M4G_01.203.01.203` |
+| Quectel | RM520N-GL-AP | SDX62 | `RM520NGLAAR01A08M4G_11.200.11.200` |
 | Quectel | SC200E | QCM2290 | `SC200EEMNAR01A02_BP01.002_Android11.0.0.01.001` |
 | Sierra Wireless | EM7455 | MDM9230 | `SWI9X30C_02.24.03.00` |
 | Sierra Wireless | EM7511 | MDM9250 | `SWI9X50C_01.08.04.00`<br>`SWI9X50C_01.14.22.00` |
@@ -55,8 +61,10 @@ Devices we have confirmed useful for diag* work, and the firmware versions we ha
 | SIMCom | SIM7600NA-H | MDM9207 | `LE20B01SIM7600NA_210506` |
 | SIMCom | SIM8202G-M2 | SDX55 | `LE13B04SIM8202M44A-M2` |
 | TCL | IK41US | MDM9607 | `IK41_OY_02.00_02` |
+| TCL | MW41TM (Alcatel LINKZONE) | MDM9207 | `MW41_00_02.00_32`<br>`MW41_00_02.00_32_b201802261431` |
 | TCL | MW513U | SDX62 | `MW513U_00_02.00_68`<br>`MW513U_00_02.00_72` |
 | Telit | FN980m | SDX55 | `38.03.282-P0H.000700`<br>`38.23.002-P0H.120710` |
 | Telit | LE910C4-WWXD | MDM9x07 | `25.30.623-P0F.604301` |
 | Telit | LM960 | SDX20 | `32.01.1X0` |
+| Wingtech | CT2MHS01 (Cricket hotspot) | MDM9250 | `CT2MHS01_0.04.55` |
 | Wistron NeWeb | LV55 | SDX55 | `3.33.101.0` |

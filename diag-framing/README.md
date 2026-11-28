@@ -3,7 +3,8 @@
 Byte-layout diagrams for the Qualcomm DIAG containers and opcodes: the HDLC
 byte stream, a single frame, the capture-file formats, and the opcode
 envelopes that wrap log records, events and F3 debug messages. They go with
-[`diag-encapsulations-and-oracles.md`](../diag-encapsulations-and-oracles.md).
+[`diag-encapsulations-and-oracles.md`](../diag-encapsulations-and-oracles.md),
+whose sections link to the diagram that applies.
 
 Each SVG is generated from a Kaitai Struct (`.ksy`) layout. The layouts are
 tested against a working DIAG decoder, and the diagrams are drawn from them

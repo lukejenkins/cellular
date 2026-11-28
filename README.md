@@ -41,7 +41,7 @@ Each tool does one thing well and is useful on its own — capture without decod
 
 Install the Python tools from PyPI, e.g. `pip install "diaggulp[serial]" diaggpsd`. The leaf tools pull in `diagmunge` and `diaggrok` themselves. Every release is tagged, and a tag reads like the PyPI version (`diaggulp==2026.11.8` is tag `v2026.11.8`), so you can pin either one. Each repo's README lists its extras.
 
-New to DIAG captures? The [DIAG encapsulations and oracles guide](diag-encapsulations-and-oracles.md) explains the formats these tools handle, layer by layer, and what to check when a capture won't decode.
+New to DIAG captures? The [DIAG encapsulations and oracles guide](diag-encapsulations-and-oracles.md) explains the formats these tools handle, layer by layer, and what to check when a capture won't decode. Its sections link to [byte-layout diagrams](diag-framing/) of each frame, capture-file container, and opcode envelope.
 
 Wondering what hardware to use? The [tested hardware list](TESTED_HARDWARE.md) names the devices confirmed useful for diag* work and the firmware versions tested on each.
 
@@ -135,6 +135,7 @@ Per-module notes: identity, AT commands, firmware captures, and quirks.
 
 - [Tested hardware](TESTED_HARDWARE.md) — Devices confirmed useful for diag* work (modules, hotspots, and gateways from MDM9200 through SDX72), with the firmware versions tested on each.
 - [Qualcomm DIAG: Encapsulations, Compression Formats and Decode Oracles](diag-encapsulations-and-oracles.md) — Field guide to reading DIAG captures layer by layer: transports, file containers, opcodes and the `0x98` wrapper, QShrink-compressed debug prints and the `qdsp6m.qdb` database, versioned log payloads, a chipset-generation matrix, a catalogue of decode oracles, and a "this frame won't decode" triage checklist.
+- [Qualcomm DIAG framing diagrams](diag-framing/) — Twenty byte-layout diagrams that go with the guide above: the HDLC byte stream and frame, the DLF and QMDL2 capture files, the `0x10` log-record frame, the `0x98` wrapper, the F3 debug-message and event envelopes, and the control opcodes.
 - [Cellular Modem Scan Commands Reference](cell-scan-commands.md) — Cross-vendor comparison of AT commands that return cell tower observations. Covers Fibocom, Quectel, Sierra Wireless, SIMCom, and Telit modems with data field matrices, WiGLE submission compatibility, and scan strategy recommendations.
 
 ### Elsewhere
